@@ -89,16 +89,11 @@ fun Application.sykepengeperioderApplication(): KafkaStreams {
 }
 
 internal fun JsonNode.skalOppfyllesAvOss(type: String)  =
-        if (has("@behov")) {
-            val behov = this["@behov"]
-            if ( behov.isArray ) {
-                behov.map { b -> b.asText() }.any { t -> t == type }
-            } else {
-                behov.asText() == type
-            }
-        } else {
-            false
-        }
+        this["@behov"]?.let {
+            if (it.isArray) {
+                it.map { b -> b.asText() }.any { t -> t == type }
+            } else it.asText() == type
+        } ?: false
 
 private fun JsonNode.harLøsning() =
         has("@løsning")
