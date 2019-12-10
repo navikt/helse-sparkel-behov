@@ -32,7 +32,7 @@ import java.util.*
 private const val sykepengeperioderBehov = "Sykepengehistorikk"
 private const val behovTopic = "privat-helse-sykepenger-behov"
 
-private val objectMapper = jacksonObjectMapper()
+internal val objectMapper = jacksonObjectMapper()
         .registerModule(JavaTimeModule())
         .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
 
@@ -57,7 +57,7 @@ fun Application.sykepengeperioderApplication(): KafkaStreams {
     ).peek { key, value ->
         log.info("mottok melding key=$key value=$value")
     }.filter { _, value ->
-        value.erBehov(sykepengeperioderBehov)
+        value.skalOppfyllesAvOss(sykepengeperioderBehov)
     }.filterNot { _, value ->
         value.harLøsning()
     }.filter { _, value ->
@@ -88,8 +88,17 @@ fun Application.sykepengeperioderApplication(): KafkaStreams {
     }
 }
 
-private fun JsonNode.erBehov(type: String) =
-        has("@behov") && this["@behov"].textValue() == type
+internal fun JsonNode.skalOppfyllesAvOss(type: String)  =
+        if (has("@behov")) {
+            val behov = this["@behov"]
+            if ( behov.isArray ) {
+                behov.map { b -> b.asText() }.any { t -> t == type }
+            } else {
+                behov.asText() == type
+            }
+        } else {
+            false
+        }
 
 private fun JsonNode.harLøsning() =
         has("@løsning")
