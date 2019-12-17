@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.databind.node.ObjectNode
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
+import com.fasterxml.jackson.module.kotlin.convertValue
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import io.ktor.application.Application
 import io.ktor.application.ApplicationStarted
@@ -12,6 +13,7 @@ import io.ktor.application.log
 import io.ktor.util.KtorExperimentalAPI
 import no.nav.helse.sparkel.sykepengeperioder.serde.JsonNodeSerde
 import no.nav.helse.sparkel.sykepengeperioder.spole.AzureClient
+import no.nav.helse.sparkel.sykepengeperioder.spole.Periode
 import no.nav.helse.sparkel.sykepengeperioder.spole.SpoleClient
 import org.apache.kafka.clients.CommonClientConfigs
 import org.apache.kafka.common.config.SaslConfigs
@@ -30,6 +32,7 @@ import java.time.LocalDate
 import java.util.*
 
 private const val sykepengeperioderBehov = "Sykepengehistorikk"
+private const val utgangspunktForBeregningAvYtelse = "utgangspunktForBeregningAvYtelse"
 private const val behovTopic = "privat-helse-sykepenger-behov"
 
 internal val objectMapper = jacksonObjectMapper()
@@ -61,12 +64,15 @@ fun Application.sykepengeperioderApplication(): KafkaStreams {
     }.filterNot { _, value ->
         value.harLøsning()
     }.filter { _, value ->
-        value.has("aktørId") && value.has("tom")
+        value.has("aktørId") && value.has(utgangspunktForBeregningAvYtelse)
     }.peek { key, value ->
         log.info("løser behov key=$key")
     }.mapValues { _, value ->
         try {
-            value.setLøsning(lagLøsning(spoleClient, value["aktørId"].textValue(), LocalDate.parse(value["tom"].textValue())))
+            val aktørId = value["aktørId"].textValue()
+            val grenseDato = LocalDate.parse(value[utgangspunktForBeregningAvYtelse].textValue())
+            val perioder = spoleClient.hentSykepengeperioder(aktørId, grenseDato)
+            value.setLøsning(sykepengeperioderBehov, perioder)
         } catch (err: Exception) {
             log.error("feil ved henting av spole-data: ${err.message}", err)
             null
@@ -98,12 +104,10 @@ internal fun JsonNode.skalOppfyllesAvOss(type: String)  =
 private fun JsonNode.harLøsning() =
         has("@løsning")
 
-internal fun lagLøsning(spoleClient: SpoleClient, aktørId: String, periodeTom: LocalDate): JsonNode {
-    return objectMapper.valueToTree(spoleClient.hentSykepengeperioder(aktørId, periodeTom))
-}
-
-private fun JsonNode.setLøsning(løsning: JsonNode) =
-        (this as ObjectNode).set("@løsning", løsning)
+private fun JsonNode.setLøsning(nøkkel: String, data: List<Periode>) =
+        (this as ObjectNode).set("@løsning", objectMapper.convertValue(mapOf(
+                nøkkel to data
+        )))
 
 @KtorExperimentalAPI
 private fun Application.streamsConfig() = Properties().apply {

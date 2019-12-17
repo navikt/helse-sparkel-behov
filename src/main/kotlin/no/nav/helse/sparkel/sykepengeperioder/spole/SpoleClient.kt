@@ -2,7 +2,6 @@ package no.nav.helse.sparkel.sykepengeperioder.spole
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.node.ArrayNode
-import kotlinx.io.core.Input
 import org.slf4j.LoggerFactory
 import java.io.InputStream
 import java.net.HttpURLConnection
@@ -16,7 +15,7 @@ class SpoleClient(private val baseUrl: String, private val accesstokenScope: Str
         private val tjenestekallLog = LoggerFactory.getLogger("tjenestekall")
     }
 
-    fun hentSykepengeperioder(aktørId: String, periodeTom: LocalDate): Sykepengeperioder {
+    fun hentSykepengeperioder(aktørId: String, periodeTom: LocalDate): List<Periode> {
         val url = "$baseUrl/sykepengeperioder/${aktørId}?periodeTom=$periodeTom"
         val (responseCode, responseBody) = with(URL(url).openConnection() as HttpURLConnection) {
             requestMethod = "GET"
@@ -36,18 +35,14 @@ class SpoleClient(private val baseUrl: String, private val accesstokenScope: Str
 
         val jsonNode = objectMapper.readTree(responseBody)
 
-        return Sykepengeperioder(
-                aktørId = jsonNode["aktør_id"].textValue(),
-                perioder = (jsonNode["perioder"] as ArrayNode).map { periodeJson ->
-                    Periode(
-                            fom = LocalDate.parse(periodeJson["fom"].textValue()),
-                            tom = LocalDate.parse(periodeJson["tom"].textValue()),
-                            grad = periodeJson["sykemeldingsgrad"].textValue()
-                    )
-                }
-        )
+        return (jsonNode["perioder"] as ArrayNode).map { periodeJson ->
+            Periode(
+                    fom = LocalDate.parse(periodeJson["fom"].textValue()),
+                    tom = LocalDate.parse(periodeJson["tom"].textValue()),
+                    grad = periodeJson["sykemeldingsgrad"].textValue()
+            )
+        }
     }
 }
 
-data class Sykepengeperioder(val aktørId: String, val perioder: List<Periode>)
 data class Periode(val fom: LocalDate, val tom: LocalDate, val grad: String)

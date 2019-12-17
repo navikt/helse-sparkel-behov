@@ -58,10 +58,10 @@ internal class SpoleClientTest {
 
         val sykepengeperioder = spoleClient.hentSykepengeperioder(aktørId = aktørId, periodeTom = periodeTom)
 
-        assertEquals(1, sykepengeperioder.perioder.size)
-        assertEquals(LocalDate.parse("2019-01-01"), sykepengeperioder.perioder[0].fom)
-        assertEquals(LocalDate.parse("2019-02-01"), sykepengeperioder.perioder[0].tom)
-        assertEquals("100", sykepengeperioder.perioder[0].grad)
+        assertEquals(1, sykepengeperioder.size)
+        assertEquals(LocalDate.parse("2019-01-01"), sykepengeperioder[0].fom)
+        assertEquals(LocalDate.parse("2019-02-01"), sykepengeperioder[0].tom)
+        assertEquals("100", sykepengeperioder[0].grad)
     }
 }
 
