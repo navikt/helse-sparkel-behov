@@ -1,4 +1,4 @@
-package no.nav.helse.sparkel.sykepengeperioder.spole
+package no.nav.helse.sparkel.sykepengeperioder.infotrygd
 
 import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.WireMock

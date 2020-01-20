@@ -12,9 +12,9 @@ import io.ktor.application.ApplicationStopping
 import io.ktor.application.log
 import io.ktor.util.KtorExperimentalAPI
 import no.nav.helse.sparkel.sykepengeperioder.serde.JsonNodeSerde
-import no.nav.helse.sparkel.sykepengeperioder.spole.AzureClient
-import no.nav.helse.sparkel.sykepengeperioder.spole.Periode
-import no.nav.helse.sparkel.sykepengeperioder.spole.SpoleClient
+import no.nav.helse.sparkel.sykepengeperioder.infotrygd.AzureClient
+import no.nav.helse.sparkel.sykepengeperioder.infotrygd.Periode
+import no.nav.helse.sparkel.sykepengeperioder.infotrygd.InfotrygdClient
 import org.apache.kafka.clients.CommonClientConfigs
 import org.apache.kafka.common.config.SaslConfigs
 import org.apache.kafka.common.config.SslConfigs
@@ -47,10 +47,11 @@ fun Application.sykepengeperioderApplication(): KafkaStreams {
             clientId = environment.config.property("azure.client_id").getString(),
             clientSecret = environment.config.property("azure.client_secret").getString()
     )
-    val spoleClient = SpoleClient(
-            baseUrl = environment.config.property("spole.url").getString(),
-            accesstokenScope = environment.config.property("spole.scope").getString(),
+    val infotrygdClient = InfotrygdClient(
+            baseUrl = environment.config.property("infotrygd.url").getString(),
+            accesstokenScope = environment.config.property("infotrygd.scope").getString(),
             azureClient = azureClient)
+
 
     val builder = StreamsBuilder()
 
@@ -71,10 +72,10 @@ fun Application.sykepengeperioderApplication(): KafkaStreams {
         try {
             val aktørId = value["aktørId"].textValue()
             val grenseDato = LocalDate.parse(value[utgangspunktForBeregningAvYtelse].textValue())
-            val perioder = spoleClient.hentSykepengeperioder(aktørId, grenseDato)
+            val perioder = infotrygdClient.hentHistorikk(aktørId, grenseDato)
             value.setLøsning(sykepengeperioderBehov, perioder)
         } catch (err: Exception) {
-            log.error("feil ved henting av spole-data: ${err.message}", err)
+            log.error("feil ved henting av infotrygd-data: ${err.message}", err)
             null
         }
     }.filterNot { _, value ->

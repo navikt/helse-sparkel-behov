@@ -1,4 +1,4 @@
-package no.nav.helse.sparkel.sykepengeperioder.spole
+package no.nav.helse.sparkel.sykepengeperioder.infotrygd
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.slf4j.LoggerFactory
