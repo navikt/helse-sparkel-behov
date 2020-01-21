@@ -59,8 +59,8 @@ fun Application.sykepengeperioderApplication(): KafkaStreams {
     builder.stream<String, JsonNode>(
             listOf(behovTopic), Consumed.with(Serdes.String(), JsonNodeSerde(objectMapper))
             .withOffsetResetPolicy(Topology.AutoOffsetReset.LATEST)
-    ).peek { key, value ->
-        log.info("mottok melding key=$key value=$value")
+    ).peek { key, _ ->
+        log.info("mottok melding key=$key")
     }.filter { _, value ->
         value.skalOppfyllesAvOss(sykepengeperioderBehov)
     }.filterNot { _, value ->
@@ -71,9 +71,9 @@ fun Application.sykepengeperioderApplication(): KafkaStreams {
         log.info("løser behov key=$key")
     }.mapValues { _, value ->
         try {
-            val aktørId = value["aktørId"].textValue()
+            val fnr = value["fødselsnummer"].textValue()
             val grenseDato = LocalDate.parse(value[utgangspunktForBeregningAvYtelse].textValue())
-            val perioder = infotrygdClient.hentHistorikk(aktørId, grenseDato)
+            val perioder = infotrygdClient.hentHistorikk(fnr, grenseDato)
             value.setLøsning(sykepengeperioderBehov, perioder)
         } catch (err: Exception) {
             log.error("feil ved henting av infotrygd-data: ${err.message}", err)
