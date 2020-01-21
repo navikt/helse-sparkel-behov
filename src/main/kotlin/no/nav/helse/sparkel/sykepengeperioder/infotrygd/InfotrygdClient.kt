@@ -18,7 +18,7 @@ class InfotrygdClient(private val baseUrl: String, private val accesstokenScope:
 
     fun hentHistorikk(fnr: String, datoForYtelse: LocalDate): List<Periode> {
         val historikkFom = datoForYtelse.minusYears(3)
-        val url = "${baseUrl}/hentSykepengerListe?fnr=$fnr&fraDato=${historikkFom.format(DateTimeFormatter.ISO_DATE)}&tilDato=${datoForYtelse.format(DateTimeFormatter.ISO_DATE)}"
+        val url = "${baseUrl}/v1/hentSykepengerListe?fnr=$fnr&fraDato=${historikkFom.format(DateTimeFormatter.ISO_DATE)}&tilDato=${datoForYtelse.format(DateTimeFormatter.ISO_DATE)}"
         val (responseCode, responseBody) = with(URL(url).openConnection() as HttpURLConnection) {
             requestMethod = "GET"
 

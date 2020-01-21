@@ -123,7 +123,7 @@ class AppIntegrationTest {
 
         )
         stubFor(
-            get(urlPathEqualTo("/hentSykepengerListe"))
+            get(urlPathEqualTo("/v1/hentSykepengerListe"))
                 .withHeader("Accept", equalTo("application/json"))
                 .willReturn(
                     aResponse()

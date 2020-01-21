@@ -46,6 +46,6 @@ spec:
   - name: AZURE_TENANT_BASEURL
     value: https://login.microsoftonline.com
   - name: INFOTRYGD_SCOPE
-    value: api://ac17f325-33b4-4b45-bb21-b84dd87b1f9d/.default
+    value: api://847deffa-0b46-4b8f-ae79-c7773ee3dfb3/.default
   - name: INFOTRYGD_URL
-    value: http://infotrygd.default.svc.nais.local
+    value: http://infotrygd-sykepenger.default.svc.nais.local
