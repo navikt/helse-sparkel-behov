@@ -43,5 +43,10 @@ spec:
     value: b27apvl00045.preprod.local:8443,b27apvl00046.preprod.local:8443,b27apvl00047.preprod.local:8443
   - name: AZURE_TENANT_ID
     value: 966ac572-f5b7-4bbe-aa88-c76419c0f851
-  - name: SPOLE_SCOPE
-    value: https://trygdeetaten.no/helsespole/.default
+  - name: AZURE_TENANT_BASEURL
+    value: https://login.microsoftonline.com
+  - name: INFOTRYGD_SCOPE
+    value: api://df41895c-b7f3-4b8c-b333-8801710093ad/.default
+  - name: INFOTRYGD_URL
+    value: http://infotrygd.default.svc.nais.local
+

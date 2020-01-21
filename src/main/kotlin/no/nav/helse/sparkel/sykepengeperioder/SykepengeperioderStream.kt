@@ -1,6 +1,7 @@
 package no.nav.helse.sparkel.sykepengeperioder
 
 import com.fasterxml.jackson.databind.JsonNode
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.databind.node.ObjectNode
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
@@ -31,19 +32,19 @@ import java.time.Duration
 import java.time.LocalDate
 import java.util.*
 
-private const val sykepengeperioderBehov = "Sykepengehistorikk"
-private const val utgangspunktForBeregningAvYtelse = "utgangspunktForBeregningAvYtelse"
-private const val behovTopic = "privat-helse-sykepenger-behov"
+const val sykepengeperioderBehov = "Sykepengehistorikk"
+const val utgangspunktForBeregningAvYtelse = "utgangspunktForBeregningAvYtelse"
+const val behovTopic = "privat-helse-sykepenger-behov"
 
-internal val objectMapper = jacksonObjectMapper()
-        .registerModule(JavaTimeModule())
-        .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
+val objectMapper: ObjectMapper = jacksonObjectMapper()
+    .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
+    .registerModule(JavaTimeModule())
 
 @KtorExperimentalAPI
 fun Application.sykepengeperioderApplication(): KafkaStreams {
 
     val azureClient = AzureClient(
-            tenantUrl = "https://login.microsoftonline.com/" + environment.config.property("azure.tenant_id").getString(),
+            tenantUrl = environment.config.property("azure.tenant.url").getString(),
             clientId = environment.config.property("azure.client_id").getString(),
             clientSecret = environment.config.property("azure.client_secret").getString()
     )
@@ -66,7 +67,7 @@ fun Application.sykepengeperioderApplication(): KafkaStreams {
         value.harLøsning()
     }.filter { _, value ->
         value.has("aktørId") && value.has(utgangspunktForBeregningAvYtelse)
-    }.peek { key, value ->
+    }.peek { key, _ ->
         log.info("løser behov key=$key")
     }.mapValues { _, value ->
         try {
@@ -106,7 +107,7 @@ private fun JsonNode.harLøsning() =
         has("@løsning")
 
 private fun JsonNode.setLøsning(nøkkel: String, data: List<Periode>) =
-        (this as ObjectNode).set("@løsning", objectMapper.convertValue(mapOf(
+        (this as ObjectNode).set<JsonNode>("@løsning", objectMapper.convertValue(mapOf(
                 nøkkel to data
         )))
 
