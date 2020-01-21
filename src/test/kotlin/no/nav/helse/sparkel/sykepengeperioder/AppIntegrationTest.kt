@@ -66,7 +66,7 @@ class AppIntegrationTest {
     internal fun `løser behov`() {
 
         val behov =
-            """{"@id": "behovsid", "@behov":["$sykepengeperioderBehov"], "aktørId":"123", "$utgangspunktForBeregningAvYtelse": "2020-01-01"}"""
+            """{"@id": "behovsid", "@behov":["$sykepengeperioderBehov"], "aktørId":"123", "$utgangspunktForBeregningAvYtelse": "2020-01-01", "fødselsnummer": "fnr" }"""
 
         var fantLøsning = false
         var id = 0

@@ -7,9 +7,9 @@ import org.junit.jupiter.api.Test
 internal class SykepengerperioderStreamTest  {
     @Test
     fun `Test om behov inneholder ønsket string` (){
-        val behovMedListe = objectMapper.readTree("""{"@id": "behovsid", "aktørId": "aktørid1", "@behov": ["Sykepengehistorikk", "Foreldrepenger"]}""")
-        val behovUtenListe = objectMapper.readTree("""{"@id": "behovsid", "aktørId": "aktørid1", "@behov": "Sykepengehistorikk"}""")
-        val behovUtenSykepenger = objectMapper.readTree("""{"@id": "behovsid", "aktørId": "aktørid1", "@behov": "Foreldrepenger"}""")
+        val behovMedListe = objectMapper.readTree("""{"@id": "behovsid", "aktørId": "aktørid1", "fødselsnummer": "fnr1", "@behov": ["Sykepengehistorikk", "Foreldrepenger"]}""")
+        val behovUtenListe = objectMapper.readTree("""{"@id": "behovsid", "aktørId": "aktørid1", "fødselsnummer": "fnr1", "@behov": "Sykepengehistorikk"}""")
+        val behovUtenSykepenger = objectMapper.readTree("""{"@id": "behovsid", "aktørId": "aktørid1", "fødselsnummer": "fnr1", "@behov": "Foreldrepenger"}""")
         assertTrue(behovMedListe.skalOppfyllesAvOss("Sykepengehistorikk"))
         assertTrue(behovUtenListe.skalOppfyllesAvOss("Sykepengehistorikk"))
         assertFalse(behovUtenSykepenger.skalOppfyllesAvOss("Sykepengehistorikk"))

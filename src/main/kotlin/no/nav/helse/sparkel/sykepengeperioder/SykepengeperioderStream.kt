@@ -66,7 +66,7 @@ fun Application.sykepengeperioderApplication(): KafkaStreams {
     }.filterNot { _, value ->
         value.harLøsning()
     }.filter { _, value ->
-        value.has("aktørId") && value.has(utgangspunktForBeregningAvYtelse)
+        value.has("fødselsnummer") && value.has(utgangspunktForBeregningAvYtelse)
     }.peek { key, _ ->
         log.info("løser behov key=$key")
     }.mapValues { _, value ->
