@@ -25,11 +25,14 @@ internal class UtbetaltSykeperiode(jsonNode: JsonNode, inntektsopplysninger: Lis
 
 internal class Inntektsopplysninger(jsonNode: JsonNode) {
     private val dato: LocalDate = LocalDate.parse(jsonNode["sykepengerFom"].textValue())
-    private val inntekt: Double = jsonNode["loenn"].asDouble() // TODO
+    private val inntekt: Double = jsonNode["loenn"].asDouble()
     private val orgnummer: String = jsonNode["orgNr"].textValue()
 
     private fun utledInntektPerDag(jsonNode: JsonNode) {
-
+        // uke = uke * 52 / 260
+        // biuke = biuke * 26 / 260
+        // måned = måned * 12 / 260
+        // år = år / 260
     }
 }
 
