@@ -110,7 +110,7 @@ class AppIntegrationTest {
         var fantLøsning = false
         var id = 0
         while (id++ < 100 && !fantLøsning) {
-            producer.send(ProducerRecord(behovTopic, "key-$id", behov))
+            producer.send(ProducerRecord(rapidTopic, "key-$id", behov))
             await()
                 .atMost(150, TimeUnit.MILLISECONDS)
                 .untilAsserted {

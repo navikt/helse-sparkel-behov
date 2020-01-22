@@ -1411,7 +1411,7 @@
         "inntektList": [
         {
             "orgNr": "88888888",
-            "sykepengerFom": "2005-11-11",
+                "sykepengerFom": "2005-11-11",
             "refusjonTom": null,
             "refusjonsType": "J",
             "periodeKode": "M",

@@ -1,40 +1,59 @@
 package no.nav.helse.sparkel.sykepengeperioder.infotrygd
 
 import com.fasterxml.jackson.databind.JsonNode
+import no.nav.helse.sparkel.sykepengeperioder.infotrygd.Inntektsopplysninger.PeriodeKode.*
+import no.nav.helse.sparkel.sykepengeperioder.infotrygd.Utbetalingshistorikk.Companion.log
+import org.slf4j.LoggerFactory
 import java.time.LocalDate
 
 internal class Utbetalingshistorikk(private val jsonNode: JsonNode) {
-    private val fom: LocalDate = LocalDate.parse(jsonNode["sykemeldtFom"].textValue())
-    private val tom: LocalDate = LocalDate.parse(jsonNode["sykemeldtTom"].textValue())
-    private val grad: String = jsonNode["grad"].textValue()
-    private val inntektsopplysninger: List<Inntektsopplysninger> = jsonNode["inntektList"]
-        .map { Inntektsopplysninger(it) }
-    private val utbetalteSykeperioder: List<UtbetaltSykeperiode> = jsonNode["utbetalingList"]
-        .filter { it["typeTekst"].textValue() == "ArbRef" }
-        .map { UtbetaltSykeperiode(it, inntektsopplysninger) }
+    companion object {
+        internal val log = LoggerFactory.getLogger(Utbetalingshistorikk::class.java)
+    }
+
+    private val gyldigePeriodeKoder = listOf(D, U, F, M, Å)
+    private val ugyldigePeriodeKoder = listOf(X, Y)
+
+    internal val fom: LocalDate = LocalDate.parse(jsonNode["sykemeldtFom"].textValue())
+    internal val tom: LocalDate = LocalDate.parse(jsonNode["sykemeldtTom"].textValue())
+    internal val grad: String = jsonNode["grad"].textValue()
+    internal val inntektsopplysninger: List<Inntektsopplysninger> = jsonNode["inntektList"]
+            .also { if(valueOf(it["periodeKode"].textValue()) !in gyldigePeriodeKoder) println(it) }
+            .filter { valueOf(it["periodeKode"].textValue()) in gyldigePeriodeKoder }
+            .map { Inntektsopplysninger(it) }
+    internal val utbetalteSykeperioder: List<UtbetaltSykeperiode> = jsonNode["utbetalingList"]
+            .filter { it["typeTekst"].textValue() == "ArbRef" }
+            .map { UtbetaltSykeperiode(it, inntektsopplysninger) }
 }
 
 internal class UtbetaltSykeperiode(jsonNode: JsonNode, inntektsopplysninger: List<Inntektsopplysninger>) {
-    private val fom: LocalDate = LocalDate.parse(jsonNode["fom"].textValue())
-    private val tom: LocalDate = LocalDate.parse(jsonNode["tom"].textValue())
-    private val grad: String = jsonNode["utbetalingsGrad"].textValue()
-    private val dagsats: Double = jsonNode["dagsats"].asDouble()
-    private val inntektPerDag: Double = jsonNode["dagsats"].asDouble() // TODO
-    private val orgnummer: String = jsonNode["arbOrgnr"].textValue()
+    internal val fom: LocalDate = LocalDate.parse(jsonNode["fom"].textValue())
+    internal val tom: LocalDate = LocalDate.parse(jsonNode["tom"].textValue())
+    internal val grad: String = jsonNode["utbetalingsGrad"].textValue()
+    internal val dagsats: Double = jsonNode["dagsats"].asDouble()
+    internal val inntektPerDag: Double? = inntektsopplysninger.sortedBy { it.dato }.last { !fom.isBefore(it.dato) }.utledInntektPerDag()
+    internal val orgnummer: String = jsonNode["arbOrgnr"].asText()
 }
 
 internal class Inntektsopplysninger(jsonNode: JsonNode) {
-    private val dato: LocalDate = LocalDate.parse(jsonNode["sykepengerFom"].textValue())
-    private val inntekt: Double = jsonNode["loenn"].asDouble()
-    private val orgnummer: String = jsonNode["orgNr"].textValue()
+    internal val dato: LocalDate = LocalDate.parse(jsonNode["sykepengerFom"].textValue())
+    internal val inntekt: Double = jsonNode["loenn"].asDouble()
+    internal val orgnummer: String = jsonNode["orgNr"].textValue()
+    internal val periodeKode: PeriodeKode = valueOf(jsonNode["periodeKode"].textValue())
 
-    private fun utledInntektPerDag(jsonNode: JsonNode) {
-        // uke = uke * 52 / 260
-        // biuke = biuke * 26 / 260
-        // måned = måned * 12 / 260
-        // år = år / 260
+    internal enum class PeriodeKode {D, U, F, M, Å, X, Y}
 
-        //Daglig, Ukentlig, fjortende dag, Månedlig og Årlig
-    }
+    internal fun utledInntektPerDag() =
+            when (periodeKode) {
+                D -> inntekt
+                U -> inntekt * 52 / 260
+                F -> inntekt * 26 / 260
+                M -> inntekt * 12 / 260
+                Å -> inntekt / 260
+                else -> {
+                    log.warn("Ukjent periodetype i respons fra Infotrygd: $periodeKode")
+                    null
+                }
+            }
 }
 
