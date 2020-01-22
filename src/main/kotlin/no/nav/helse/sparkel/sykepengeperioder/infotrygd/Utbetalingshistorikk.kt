@@ -33,6 +33,8 @@ internal class Inntektsopplysninger(jsonNode: JsonNode) {
         // biuke = biuke * 26 / 260
         // måned = måned * 12 / 260
         // år = år / 260
+
+        //Daglig, Ukentlig, fjortende dag, Månedlig og Årlig
     }
 }
 
