@@ -16,6 +16,8 @@ import com.github.tomakehurst.wiremock.core.WireMockConfiguration
 import io.ktor.server.engine.ApplicationEngine
 import io.ktor.util.KtorExperimentalAPI
 import kotlinx.coroutines.runBlocking
+import no.nav.helse.fixtures.januar
+import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerRecord
@@ -35,6 +37,10 @@ import java.util.concurrent.TimeUnit
 @KtorExperimentalAPI
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class AppIntegrationTest {
+
+    companion object {
+        val orgnummer = "80000000"
+    }
 
     private val port = ServerSocket(0).use { it.localPort }
     lateinit var app: ApplicationEngine
@@ -80,19 +86,103 @@ class AppIntegrationTest {
                         ?.map { objectMapper.readValue<JsonNode>(it.value()) }
                         ?.firstOrNull { it.hasNonNull("@løsning") }
                         ?.let {
-                            assert(it.get("@løsning").hasNonNull(sykepengeperioderBehov)).also { fantLøsning = true }
+                            assert(it.get("@løsning").hasNonNull(sykepengeperioderBehov))
 
                             val jsonNode: ArrayNode = it.get("@løsning").get(sykepengeperioderBehov) as ArrayNode
 
                             assertEquals(1, jsonNode.size())
-                            assertEquals(LocalDate.parse("2000-04-03"), jsonNode[0].get("fom"))
-                            assertEquals(LocalDate.parse("2000-04-23"), jsonNode[0].get("tom"))
-                            assertEquals("100", jsonNode[0].get("grad"))
+                            assertEquals(3.januar, LocalDate.parse(jsonNode[0].get("fom").asText()))
+                            assertEquals(23.januar, LocalDate.parse(jsonNode[0].get("tom").asText()))
+                            assertEquals("100", jsonNode[0].get("grad").asText())
+                            fantLøsning = true
                         }
                 }
         }
         assert(fantLøsning)
     }
+
+    @Test
+    internal fun `mapper også ut inntekt og dagsats`() {
+
+        val behov =
+            """{"@id": "behovsid", "@behov":["$sykepengeperioderBehov"], "aktørId":"123", "$utgangspunktForBeregningAvYtelse": "2020-01-01", "fødselsnummer": "fnr" }"""
+
+        var fantLøsning = false
+        var id = 0
+        while (id++ < 100 && !fantLøsning) {
+            producer.send(ProducerRecord(behovTopic, "key-$id", behov))
+            await()
+                .atMost(150, TimeUnit.MILLISECONDS)
+                .untilAsserted {
+                    consumer.poll(Duration.ofMillis(100))
+                        ?.toList()
+                        ?.map { objectMapper.readValue<JsonNode>(it.value()) }
+                        ?.firstOrNull { it.hasNonNull("@løsning") }
+                        ?.let {
+                            assert(it.get("@løsning").hasNonNull(sykepengeperioderBehov))
+
+                            val løsning: ArrayNode = it.get("@løsning").get(sykepengeperioderBehov) as ArrayNode
+
+                            assertEquals(1, løsning.size())
+                            assertEquals(3.januar, LocalDate.parse(løsning[0].get("fom").asText()))
+                            assertEquals(23.januar, LocalDate.parse(løsning[0].get("tom").asText()))
+
+                            val sykeperioder: ArrayNode = løsning[0].get("sykeperioder") as ArrayNode
+                            assertSykeperiode(
+                                sykeperioder = sykeperioder,
+                                innslag = 1,
+                                fom = 3.januar,
+                                tom = 23.januar,
+                                grad = 100,
+                                orgnummer = orgnummer,
+                                inntektPerDag = 870.1,
+                                dagsats = 870.0
+                                )
+
+                            val inntektsopplysninger = løsning[0].get("inntektsopplysninger") as ArrayNode
+                            assertInntektsopplysninger(inntektsopplysninger, 19.januar, 870.1, orgnummer)
+                            fantLøsning = true
+                        }
+                }
+        }
+        assert(fantLøsning)
+    }
+
+    private fun assertSykeperiode(
+        sykeperioder: ArrayNode,
+        innslag: Int,
+        fom: LocalDate,
+        tom: LocalDate,
+        grad: Int,
+        orgnummer: String,
+        inntektPerDag: Double,
+        dagsats: Double
+    ) {
+        assertEquals(innslag, sykeperioder.size())
+        assertEquals(fom, LocalDate.parse(sykeperioder.get("fom").asText()))
+        assertEquals(tom, LocalDate.parse(sykeperioder.get("tom").asText()))
+        assertEquals(grad, sykeperioder.get("utbetalingsGrad"))
+        assertEquals(orgnummer, sykeperioder.get("orgnummer"))
+        assertEquals(inntektPerDag, sykeperioder.get("inntektPerDag").doubleValue())
+        assertEquals(dagsats, sykeperioder.get("dagsats").doubleValue())
+    }
+
+    private fun assertInntektsopplysninger(inntektsopplysninger: JsonNode, dato: LocalDate, inntektPerDag: Double, orgnummer: String) {
+        assertEquals(dato, inntektsopplysninger[0].get("dato").asText())
+        assertEquals(inntektPerDag, inntektsopplysninger[0].get("inntektPerDag").asDouble())
+        assertEquals(orgnummer, inntektsopplysninger[0].get("orgnummer").asText())
+    }
+
+    private fun assertLøsning(duration: Duration, assertion: (List<JsonNode>) -> Unit) =
+        mutableListOf<ConsumerRecord<String, String>>().apply {
+            await()
+                .atMost(duration)
+                .untilAsserted {
+                    addAll(consumer.poll(Duration.ofMillis(100)).toList())
+                    assertion(map { objectMapper.readValue<JsonNode>(it.value()) }.filter { it.hasNonNull("@løsning") })
+                }
+        }
+
 
     fun env(wiremockUrl: String, port: Int) = mapOf(
         "HTTP_PORT" to "$port",
@@ -137,10 +227,10 @@ class AppIntegrationTest {
                                           "ident": 1000,
                                           "tknr": "0220",
                                           "seq": 79999596,
-                                          "sykemeldtFom": "2000-04-03",
-                                          "sykemeldtTom": "2000-04-23",
+                                          "sykemeldtFom": "2018-01-03",
+                                          "sykemeldtTom": "2018-01-23",
                                           "grad": "100",
-                                          "slutt": "2001-03-30",
+                                          "slutt": "2019-03-30",
                                           "erArbeidsgiverPeriode": true,
                                           "stansAarsakKode": "AF",
                                           "stansAarsak": "AvsluttetFrisk",
@@ -151,15 +241,15 @@ class AppIntegrationTest {
                                           "erSanksjonBekreftet": "",
                                           "sanksjonsDager": 0,
                                           "sykemelder": "NØDNUMMER",
-                                          "behandlet": "2000-04-05",
+                                          "behandlet": "2018-01-05",
                                           "yrkesskadeArt": "",
                                           "utbetalingList": [
                                             {
-                                              "fom": "2000-04-19",
-                                              "tom": "2000-04-23",
+                                              "fom": "2018-01-19",
+                                              "tom": "2018-01-23",
                                               "utbetalingsGrad": "100",
                                               "oppgjorsType": "50",
-                                              "utbetalt": "2000-05-16",
+                                              "utbetalt": "2018-02-16",
                                               "dagsats": 870.0,
                                               "typeKode": "5",
                                               "typeTekst": "ArbRef",
@@ -169,8 +259,8 @@ class AppIntegrationTest {
                                           "inntektList": [
                                             {
                                               "orgNr": "80000000",
-                                              "sykepengerFom": "2000-04-19",
-                                              "refusjonTom": "2000-04-30",
+                                              "sykepengerFom": "2018-01-19",
+                                              "refusjonTom": "2018-01-30",
                                               "refusjonsType": "H",
                                               "periodeKode": "U",
                                               "periode": "Ukentlig",
@@ -179,8 +269,8 @@ class AppIntegrationTest {
                                           ],
                                           "graderingList": [
                                             {
-                                              "gradertFom": "2000-04-03",
-                                              "gradertTom": "2000-04-23",
+                                              "gradertFom": "2018-01-03",
+                                              "gradertTom": "2018-01-23",
                                               "grad": "100"
                                             }
                                           ],

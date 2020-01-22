@@ -16,7 +16,7 @@ class InfotrygdClient(private val baseUrl: String, private val accesstokenScope:
         private val tjenestekallLog = LoggerFactory.getLogger("tjenestekall")
     }
 
-    fun hentHistorikk(fnr: String, datoForYtelse: LocalDate): List<Periode> {
+    fun hentHistorikk(fnr: String, datoForYtelse: LocalDate): List<Utbetalingshistorikk> {
         val historikkFom = datoForYtelse.minusYears(3)
         val url = "${baseUrl}/v1/hentSykepengerListe?fnr=$fnr&fraDato=${historikkFom.format(DateTimeFormatter.ISO_DATE)}&tilDato=${datoForYtelse.format(DateTimeFormatter.ISO_DATE)}"
         val (responseCode, responseBody) = with(URL(url).openConnection() as HttpURLConnection) {
@@ -38,7 +38,7 @@ class InfotrygdClient(private val baseUrl: String, private val accesstokenScope:
         val jsonNode = objectMapper.readTree(responseBody)
 
         return (jsonNode["sykmeldingsperioder"] as ArrayNode).map { periodeJson ->
-            Periode(
+            Utbetalingshistorikk(
                     fom = LocalDate.parse(periodeJson["sykemeldtFom"].textValue()),
                     tom = LocalDate.parse(periodeJson["sykemeldtTom"].textValue()),
                     grad = periodeJson["grad"].textValue()
@@ -47,4 +47,3 @@ class InfotrygdClient(private val baseUrl: String, private val accesstokenScope:
     }
 }
 
-data class Periode(val fom: LocalDate, val tom: LocalDate, val grad: String)

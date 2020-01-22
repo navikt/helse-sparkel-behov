@@ -14,7 +14,7 @@ import io.ktor.application.log
 import io.ktor.util.KtorExperimentalAPI
 import no.nav.helse.sparkel.sykepengeperioder.serde.JsonNodeSerde
 import no.nav.helse.sparkel.sykepengeperioder.infotrygd.AzureClient
-import no.nav.helse.sparkel.sykepengeperioder.infotrygd.Periode
+import no.nav.helse.sparkel.sykepengeperioder.infotrygd.Utbetalingshistorikk
 import no.nav.helse.sparkel.sykepengeperioder.infotrygd.InfotrygdClient
 import org.apache.kafka.clients.CommonClientConfigs
 import org.apache.kafka.common.config.SaslConfigs
@@ -106,7 +106,7 @@ internal fun JsonNode.skalOppfyllesAvOss(type: String)  =
 private fun JsonNode.harLøsning() =
         has("@løsning")
 
-private fun JsonNode.setLøsning(nøkkel: String, data: List<Periode>) =
+private fun JsonNode.setLøsning(nøkkel: String, data: List<Utbetalingshistorikk>) =
         (this as ObjectNode).set<JsonNode>("@løsning", objectMapper.convertValue(mapOf(
                 nøkkel to data
         )))
