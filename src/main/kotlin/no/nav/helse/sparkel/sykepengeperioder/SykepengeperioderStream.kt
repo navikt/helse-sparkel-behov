@@ -34,7 +34,7 @@ import java.util.*
 
 const val sykepengeperioderBehov = "Sykepengehistorikk"
 const val utgangspunktForBeregningAvYtelse = "utgangspunktForBeregningAvYtelse"
-const val behovTopic = "privat-helse-sykepenger-behov"
+const val rapidTopic = "privat-helse-sykepenger-rapid-v1"
 
 val objectMapper: ObjectMapper = jacksonObjectMapper()
     .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
