@@ -9,7 +9,7 @@ import java.util.HashMap
 import java.util.Properties
 
 internal val topicInfos = listOf(
-    KafkaEnvironment.TopicInfo(behovTopic)
+    KafkaEnvironment.TopicInfo(rapidTopic)
 )
 
 internal val embeddedKafkaEnvironment = KafkaEnvironment(

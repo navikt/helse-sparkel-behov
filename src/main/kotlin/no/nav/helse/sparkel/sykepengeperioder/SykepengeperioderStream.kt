@@ -57,7 +57,7 @@ fun Application.sykepengeperioderApplication(): KafkaStreams {
     val builder = StreamsBuilder()
 
     builder.stream<String, JsonNode>(
-            listOf(behovTopic), Consumed.with(Serdes.String(), JsonNodeSerde(objectMapper))
+            listOf(rapidTopic), Consumed.with(Serdes.String(), JsonNodeSerde(objectMapper))
             .withOffsetResetPolicy(Topology.AutoOffsetReset.LATEST)
     ).peek { key, _ ->
         log.info("mottok melding key=$key")
@@ -81,7 +81,7 @@ fun Application.sykepengeperioderApplication(): KafkaStreams {
         }
     }.filterNot { _, value ->
         value == null
-    }.to(behovTopic, Produced.with(Serdes.String(), JsonNodeSerde(objectMapper)))
+    }.to(rapidTopic, Produced.with(Serdes.String(), JsonNodeSerde(objectMapper)))
 
     return KafkaStreams(builder.build(), streamsConfig()).apply {
         addShutdownHook(this)

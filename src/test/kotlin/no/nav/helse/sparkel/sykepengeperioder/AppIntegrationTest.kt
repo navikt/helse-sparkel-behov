@@ -49,7 +49,7 @@ class AppIntegrationTest {
         wireMockServer.start()
         embeddedKafkaEnvironment.start()
         app = launchApp(env(wireMockServer.baseUrl(), port))
-        consumer.subscribe(listOf(behovTopic))
+        consumer.subscribe(listOf(rapidTopic))
         WireMock.configureFor(WireMock.create().port(wireMockServer.port()).build())
         stubEksterneEndepunkt()
     }
@@ -71,7 +71,7 @@ class AppIntegrationTest {
         var fantLøsning = false
         var id = 0
         while (id++ < 100 && !fantLøsning) {
-            producer.send(ProducerRecord(behovTopic, "key-$id", behov))
+            producer.send(ProducerRecord(rapidTopic, "key-$id", behov))
             await()
                 .atMost(150, TimeUnit.MILLISECONDS)
                 .untilAsserted {
