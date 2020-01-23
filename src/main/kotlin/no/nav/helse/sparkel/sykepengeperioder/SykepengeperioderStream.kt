@@ -27,6 +27,7 @@ import org.apache.kafka.streams.Topology
 import org.apache.kafka.streams.errors.LogAndFailExceptionHandler
 import org.apache.kafka.streams.kstream.Consumed
 import org.apache.kafka.streams.kstream.Produced
+import org.slf4j.LoggerFactory
 import java.io.File
 import java.time.Duration
 import java.time.LocalDate
@@ -42,6 +43,8 @@ val objectMapper: ObjectMapper = jacksonObjectMapper()
 
 @KtorExperimentalAPI
 fun Application.sykepengeperioderApplication(): KafkaStreams {
+
+    val sikkerlogg = LoggerFactory.getLogger("tjenestekall")
 
     val azureClient = AzureClient(
             tenantUrl = environment.config.property("azure.tenant.url").getString(),
@@ -59,7 +62,9 @@ fun Application.sykepengeperioderApplication(): KafkaStreams {
     builder.stream<String, JsonNode>(
             listOf(rapidTopic), Consumed.with(Serdes.String(), JsonNodeSerde(objectMapper))
             .withOffsetResetPolicy(Topology.AutoOffsetReset.LATEST)
-    ).filter { _, value ->
+    ).peek { key, value ->
+        sikkerlogg.info("mottok melding på key: $key med innhold: $value")
+    }.filter { _, value ->
         value.skalOppfyllesAvOss(sykepengeperioderBehov)
     }.filterNot { _, value ->
         value.harLøsning()
