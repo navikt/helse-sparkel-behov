@@ -22,17 +22,7 @@ internal class UtbetalingshistorikkTest {
 
     }
 
-    @Test
-    internal fun inntekt() {
-        val jsonNode = readJson()
-        val inntektsopplysninger = Utbetalingshistorikk(jsonNode["sykmeldingsperioder"][1]).inntektsopplysninger
-
-        assertEquals(LocalDate.of(2018, 12, 10), inntektsopplysninger[0].dato)
-        assertEquals("88888888", inntektsopplysninger[0].orgnummer)
-        assertEquals(12788.00, inntektsopplysninger[0].inntekt)
-
-    }
-
     private fun readJson() = objectMapper.readTree(
-            File("src/test/resources/infotrygdResponse.json").readText())
+        File("src/test/resources/infotrygdResponse.json").readText()
+    )
 }

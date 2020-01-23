@@ -17,7 +17,6 @@ import io.ktor.server.engine.ApplicationEngine
 import io.ktor.util.KtorExperimentalAPI
 import kotlinx.coroutines.runBlocking
 import no.nav.helse.fixtures.januar
-import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerRecord
@@ -127,20 +126,24 @@ class AppIntegrationTest {
                             assertEquals(3.januar, LocalDate.parse(løsning[0].get("fom").asText()))
                             assertEquals(23.januar, LocalDate.parse(løsning[0].get("tom").asText()))
 
-                            val sykeperioder: ArrayNode = løsning[0].get("sykeperioder") as ArrayNode
+                            val sykeperioder: ArrayNode = løsning[0].get("utbetalteSykeperioder") as ArrayNode
                             assertSykeperiode(
-                                sykeperioder = sykeperioder,
-                                innslag = 1,
-                                fom = 3.januar,
+                                sykeperiode = sykeperioder[0],
+                                fom = 19.januar,
                                 tom = 23.januar,
-                                grad = 100,
+                                grad = "100",
                                 orgnummer = orgnummer,
-                                inntektPerDag = 870.1,
+                                inntektPerMåned = 18852,
                                 dagsats = 870.0
-                                )
+                            )
 
                             val inntektsopplysninger = løsning[0].get("inntektsopplysninger") as ArrayNode
-                            assertInntektsopplysninger(inntektsopplysninger, 19.januar, 870.1, orgnummer)
+                            assertInntektsopplysninger(
+                                inntektsopplysninger = inntektsopplysninger,
+                                dato = 19.januar,
+                                inntektPerMåned = 18852,
+                                orgnummer = orgnummer
+                            )
                             fantLøsning = true
                         }
                 }
@@ -149,40 +152,32 @@ class AppIntegrationTest {
     }
 
     private fun assertSykeperiode(
-        sykeperioder: ArrayNode,
-        innslag: Int,
+        sykeperiode: JsonNode,
         fom: LocalDate,
         tom: LocalDate,
-        grad: Int,
+        grad: String,
         orgnummer: String,
-        inntektPerDag: Double,
+        inntektPerMåned: Int,
         dagsats: Double
     ) {
-        assertEquals(innslag, sykeperioder.size())
-        assertEquals(fom, LocalDate.parse(sykeperioder.get("fom").asText()))
-        assertEquals(tom, LocalDate.parse(sykeperioder.get("tom").asText()))
-        assertEquals(grad, sykeperioder.get("utbetalingsGrad"))
-        assertEquals(orgnummer, sykeperioder.get("orgnummer"))
-        assertEquals(inntektPerDag, sykeperioder.get("inntektPerDag").doubleValue())
-        assertEquals(dagsats, sykeperioder.get("dagsats").doubleValue())
+        assertEquals(fom, LocalDate.parse(sykeperiode.get("fom").asText()))
+        assertEquals(tom, LocalDate.parse(sykeperiode.get("tom").asText()))
+        assertEquals(grad, sykeperiode.get("utbetalingsGrad").asText())
+        assertEquals(orgnummer, sykeperiode.get("orgnummer").asText())
+        assertEquals(inntektPerMåned, sykeperiode.get("inntektPerMåned").intValue())
+        assertEquals(dagsats, sykeperiode.get("dagsats").doubleValue())
     }
 
-    private fun assertInntektsopplysninger(inntektsopplysninger: JsonNode, dato: LocalDate, inntektPerDag: Double, orgnummer: String) {
-        assertEquals(dato, inntektsopplysninger[0].get("dato").asText())
-        assertEquals(inntektPerDag, inntektsopplysninger[0].get("inntektPerDag").asDouble())
+    private fun assertInntektsopplysninger(
+        inntektsopplysninger: JsonNode,
+        dato: LocalDate,
+        inntektPerMåned: Int,
+        orgnummer: String
+    ) {
+        assertEquals(dato, LocalDate.parse(inntektsopplysninger[0].get("sykepengerFom").asText()))
+        assertEquals(inntektPerMåned, inntektsopplysninger[0].get("inntekt").asInt())
         assertEquals(orgnummer, inntektsopplysninger[0].get("orgnummer").asText())
     }
-
-    private fun assertLøsning(duration: Duration, assertion: (List<JsonNode>) -> Unit) =
-        mutableListOf<ConsumerRecord<String, String>>().apply {
-            await()
-                .atMost(duration)
-                .untilAsserted {
-                    addAll(consumer.poll(Duration.ofMillis(100)).toList())
-                    assertion(map { objectMapper.readValue<JsonNode>(it.value()) }.filter { it.hasNonNull("@løsning") })
-                }
-        }
-
 
     fun env(wiremockUrl: String, port: Int) = mapOf(
         "HTTP_PORT" to "$port",
