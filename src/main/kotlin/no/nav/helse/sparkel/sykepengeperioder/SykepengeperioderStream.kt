@@ -64,7 +64,11 @@ fun Application.sykepengeperioderApplication(): KafkaStreams {
     }.filterNot { _, value ->
         value.harLøsning()
     }.filter { _, value ->
-        value.has("fødselsnummer") && value.has(utgangspunktForBeregningAvYtelse)
+        if (value.has("fødselsnummer") && value.has(utgangspunktForBeregningAvYtelse)) {
+            true
+        } else
+            false
+                .also { log.warn("fikk behov uten fødelsenummer eller utgangspunktForBeregningAvYtelse!") }
     }.mapValues { _, value ->
         try {
             val behovId = value["@id"].textValue()
