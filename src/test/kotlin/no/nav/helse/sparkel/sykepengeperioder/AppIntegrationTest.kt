@@ -131,7 +131,7 @@ class AppIntegrationTest {
                                 sykeperiode = sykeperioder[0],
                                 fom = 19.januar,
                                 tom = 23.januar,
-                                grad = "100",
+                                grad = 100,
                                 orgnummer = orgnummer,
                                 inntektPerMåned = 18852,
                                 dagsats = 870.0
@@ -155,14 +155,14 @@ class AppIntegrationTest {
         sykeperiode: JsonNode,
         fom: LocalDate,
         tom: LocalDate,
-        grad: String,
+        grad: Int,
         orgnummer: String,
         inntektPerMåned: Int,
         dagsats: Double
     ) {
         assertEquals(fom, LocalDate.parse(sykeperiode.get("fom").asText()))
         assertEquals(tom, LocalDate.parse(sykeperiode.get("tom").asText()))
-        assertEquals(grad, sykeperiode.get("utbetalingsGrad").asText())
+        assertEquals(grad, sykeperiode.get("utbetalingsGrad").intValue())
         assertEquals(orgnummer, sykeperiode.get("orgnummer").asText())
         assertEquals(inntektPerMåned, sykeperiode.get("inntektPerMåned").intValue())
         assertEquals(dagsats, sykeperiode.get("dagsats").doubleValue())

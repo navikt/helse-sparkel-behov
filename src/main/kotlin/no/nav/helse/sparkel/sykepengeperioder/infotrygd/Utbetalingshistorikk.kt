@@ -15,7 +15,7 @@ class Utbetalingshistorikk(jsonNode: JsonNode) {
 
     val fom: LocalDate = LocalDate.parse(jsonNode["sykemeldtFom"].textValue())
     val tom: LocalDate = LocalDate.parse(jsonNode["sykemeldtTom"].textValue())
-    val grad: String = jsonNode["grad"].textValue()
+    val grad: Int = jsonNode["grad"].textValue().toInt()
     val inntektsopplysninger: List<Inntektsopplysninger> = jsonNode["inntektList"]
         .filter {
             when (val periodeKode = it["periodeKode"].textValue()) {
@@ -37,7 +37,7 @@ data class Utbetaling(
 ) {
     val fom: LocalDate = LocalDate.parse(jsonNode["fom"].textValue())
     val tom: LocalDate = LocalDate.parse(jsonNode["tom"].textValue())
-    val utbetalingsGrad = jsonNode["utbetalingsGrad"].textValue()
+    val utbetalingsGrad = jsonNode["utbetalingsGrad"].textValue().toInt()
     val oppgjorsType = jsonNode["oppgjorsType"].textValue()
     val utbetalt = jsonNode["utbetalt"].takeUnless { it.isNull }?.let { LocalDate.parse(it.textValue()) }
     val dagsats = jsonNode["dagsats"].doubleValue()

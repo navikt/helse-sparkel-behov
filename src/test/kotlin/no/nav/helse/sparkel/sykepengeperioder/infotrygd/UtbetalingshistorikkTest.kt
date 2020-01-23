@@ -16,7 +16,7 @@ internal class UtbetalingshistorikkTest {
 
         assertEquals(LocalDate.of(2018, 12, 3), utbetalingshistorikk.fom)
         assertEquals(LocalDate.of(2019, 4, 11), utbetalingshistorikk.tom)
-        assertEquals("050", utbetalingshistorikk.grad)
+        assertEquals(50, utbetalingshistorikk.grad)
         assertNotNull(utbetalingshistorikk.inntektsopplysninger)
         assertNotNull(utbetalingshistorikk.utbetalteSykeperioder)
 
