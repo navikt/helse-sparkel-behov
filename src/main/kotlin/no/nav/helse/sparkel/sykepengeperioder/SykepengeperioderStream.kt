@@ -63,6 +63,8 @@ fun Application.sykepengeperioderApplication(): KafkaStreams {
             listOf(rapidTopic), Consumed.with(Serdes.String(), JsonNodeSerde(objectMapper))
             .withOffsetResetPolicy(Topology.AutoOffsetReset.LATEST)
     ).filter { _, value ->
+        value != null
+    }.filter { _, value ->
         value.skalOppfyllesAvOss(sykepengeperioderBehov)
     }.peek { key, value ->
         sikkerlogg.info("mottok melding på key: $key med innhold: $value")
