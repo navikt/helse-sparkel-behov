@@ -12,7 +12,7 @@ val junitJupiterVersion = "5.4.0"
 val mainClass = "no.nav.helse.sparkel.sykepengeperioder.AppKt"
 
 plugins {
-    kotlin("jvm") version "1.3.50"
+    kotlin("jvm") version "1.3.60"
 }
 
 buildscript {
@@ -22,20 +22,11 @@ buildscript {
 }
 
 dependencies {
-    implementation(kotlin("stdlib"))
-    implementation("ch.qos.logback:logback-classic:1.2.3")
-    implementation("net.logstash.logback:logstash-logback-encoder:5.2")
-    implementation("io.ktor:ktor-server-netty:$ktorVersion")
+    implementation("no.nav.helse:rapids-rivers:1.1daa460")
     implementation("io.ktor:ktor-client-cio:$ktorVersion")
     implementation("io.ktor:ktor-client-jackson:$ktorVersion")
 
-    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:$jacksonVersion")
-    implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:$jacksonVersion")
-
     implementation("org.apache.kafka:kafka-streams:$kafkaVersion")
-
-    implementation("io.ktor:ktor-metrics-micrometer:$ktorVersion")
-    implementation("io.micrometer:micrometer-registry-prometheus:$micrometerRegistryPrometheusVersion")
 
     testImplementation("io.mockk:mockk:$mockkVersion")
     testImplementation("com.github.tomakehurst:wiremock:$wireMockVersion") {
@@ -48,11 +39,21 @@ dependencies {
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$junitJupiterVersion")
 }
 
+val githubUser: String by project
+val githubPassword: String by project
+
 repositories {
     jcenter()
     mavenCentral()
     maven("https://dl.bintray.com/kotlin/ktor")
     maven("http://packages.confluent.io/maven/")
+    maven {
+        url = uri("https://maven.pkg.github.com/navikt/helse-spleis")
+        credentials {
+            username = githubUser
+            password = githubPassword
+        }
+    }
 }
 
 java {

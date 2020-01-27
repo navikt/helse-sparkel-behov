@@ -1,6 +1,6 @@
-package no.nav.helse.fixtures
+package no.nav.helse.sparkel.sykepengeperioder
 
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
 

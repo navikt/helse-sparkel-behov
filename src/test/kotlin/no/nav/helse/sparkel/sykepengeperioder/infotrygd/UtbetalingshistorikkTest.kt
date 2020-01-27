@@ -1,6 +1,8 @@
 package no.nav.helse.sparkel.sykepengeperioder.infotrygd
 
-import no.nav.helse.sparkel.sykepengeperioder.objectMapper
+import com.fasterxml.jackson.databind.SerializationFeature
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Test
@@ -21,6 +23,10 @@ internal class UtbetalingshistorikkTest {
         assertNotNull(utbetalingshistorikk.utbetalteSykeperioder)
 
     }
+
+    private val objectMapper = jacksonObjectMapper()
+            .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
+            .registerModule(JavaTimeModule())
 
     private fun readJson() = objectMapper.readTree(
         File("src/test/resources/infotrygdResponse.json").readText()

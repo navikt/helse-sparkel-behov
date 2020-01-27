@@ -1,4 +1,4 @@
-package no.nav.helse.fixtures
+package no.nav.helse.sparkel.sykepengeperioder
 
 import java.time.LocalDate
 
