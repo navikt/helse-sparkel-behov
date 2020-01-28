@@ -7,12 +7,14 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.convertValue
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import no.nav.helse.rapids_rivers.RapidsConnection
+import no.nav.helse.rapids_rivers.River
 import no.nav.helse.rapids_rivers.toJson
+import no.nav.helse.sparkel.sykepengeperioder.SykepengehistorikkRiver.Companion.behov
 import no.nav.helse.sparkel.sykepengeperioder.infotrygd.InfotrygdClient
 import org.slf4j.LoggerFactory
 import java.time.LocalDate
 
-internal class Sykepengehistorikkløser(private val infotrygdClient: InfotrygdClient) {
+internal class Sykepengehistorikkløser(private val infotrygdClient: InfotrygdClient): River.PacketListener {
 
     private val sikkerlogg = LoggerFactory.getLogger("tjenestekall")
     private val log = LoggerFactory.getLogger(this::class.java)
@@ -20,7 +22,7 @@ internal class Sykepengehistorikkløser(private val infotrygdClient: InfotrygdCl
             .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
             .registerModule(JavaTimeModule())
 
-    fun løsBehov(behov: String, packet: JsonNode, context: RapidsConnection.MessageContext) {
+    override fun onPacket(packet: JsonNode, context: RapidsConnection.MessageContext) {
         try {
             sikkerlogg.info("mottok melding: ${packet.toJson()}")
             infotrygdClient.hentHistorikk(

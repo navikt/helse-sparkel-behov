@@ -1,10 +1,10 @@
 package no.nav.helse.sparkel.sykepengeperioder
 
 import com.fasterxml.jackson.databind.JsonNode
-import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.rapids_rivers.River
 
-internal class SykepengehistorikkRiver(private val løser: Sykepengehistorikkløser) : River() {
+// Understands a Sykepengehistorikkbehov message
+internal class SykepengehistorikkRiver() : River() {
 
     companion object {
         internal val behov = "Sykepengehistorikk"
@@ -16,9 +16,5 @@ internal class SykepengehistorikkRiver(private val løser: Sykepengehistorikklø
         validate { it.hasNonNull("@id") }
         validate { it.hasNonNull("fødselsnummer") }
         validate { it.hasNonNull("utgangspunktForBeregningAvYtelse") }
-    }
-
-    override fun onPacket(packet: JsonNode, context: RapidsConnection.MessageContext) {
-        løser.løsBehov(behov, packet, context)
     }
 }

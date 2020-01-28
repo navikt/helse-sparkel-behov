@@ -1,8 +1,8 @@
 package no.nav.helse.sparkel.sykepengeperioder
 
-import io.mockk.every
-import io.mockk.mockk
+import com.fasterxml.jackson.databind.JsonNode
 import no.nav.helse.rapids_rivers.RapidsConnection
+import no.nav.helse.rapids_rivers.River
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
@@ -28,15 +28,14 @@ internal class SykepengehistorikkRiverTest {
     }
 
     private fun testMelding(message: String): Boolean {
-        val løser = mockk<Sykepengehistorikkløser>()
         var called = false
-        every {
-            løser.løsBehov(any(), any(), any())
-        } answers {
-            called = true
-        }
-
-        SykepengehistorikkRiver(løser).onMessage(message, object : RapidsConnection.MessageContext {
+        SykepengehistorikkRiver().apply {
+            register(object : River.PacketListener {
+                override fun onPacket(packet: JsonNode, context: RapidsConnection.MessageContext) {
+                    called = true
+                }
+            })
+        }.onMessage(message, object : RapidsConnection.MessageContext {
             override fun send(message: String) {}
 
             override fun send(key: String, message: String) {}

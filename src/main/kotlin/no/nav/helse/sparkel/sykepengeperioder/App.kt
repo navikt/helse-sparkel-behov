@@ -29,8 +29,9 @@ fun createApp(env: Map<String, String>): AppBuilder {
             azureClient = azureClient
     )
 
-    val løser = Sykepengehistorikkløser(infotrygdClient)
-    builder.register(SykepengehistorikkRiver(løser))
+    val river = SykepengehistorikkRiver()
+    river.register(Sykepengehistorikkløser(infotrygdClient))
+    builder.register(river)
 
     return builder
 }

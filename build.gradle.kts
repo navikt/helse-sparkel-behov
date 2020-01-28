@@ -22,7 +22,7 @@ buildscript {
 }
 
 dependencies {
-    implementation("no.nav.helse:rapids-rivers:1.1daa460")
+    implementation("no.nav.helse:rapids-rivers:1.161aa05")
     implementation("io.ktor:ktor-client-cio:$ktorVersion")
     implementation("io.ktor:ktor-client-jackson:$ktorVersion")
 

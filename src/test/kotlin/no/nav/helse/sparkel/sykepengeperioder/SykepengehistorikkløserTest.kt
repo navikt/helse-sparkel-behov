@@ -140,7 +140,7 @@ internal class SykepengehistorikkløserTest {
                         clientSecret = "client_secret"
                 )
         ))
-        løser.løsBehov(SykepengehistorikkRiver.behov, objectMapper.readTree(behov), context)
+        løser.onPacket(objectMapper.readTree(behov), context)
     }
 
     private fun assertSykeperiode(
