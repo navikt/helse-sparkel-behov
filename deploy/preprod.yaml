@@ -46,7 +46,7 @@ spec:
   - name: KAFKA_CONSUMER_GROUP_ID
     value: sparkel-sykepengeperioder-v1
   - name: KAFKA_RAPID_TOPIC
-    value: privat-helse-sykepenger-rapid-v1
+    value: helse-rapid-v1
   - name: AZURE_TENANT_ID
     value: 966ac572-f5b7-4bbe-aa88-c76419c0f851
   - name: AZURE_TENANT_BASEURL
