@@ -9,6 +9,7 @@ import java.time.LocalDate
 class Utbetalingshistorikk(jsonNode: JsonNode) {
     companion object {
         internal val log = LoggerFactory.getLogger(Utbetalingshistorikk::class.java)
+        private val tjenestekallLog = LoggerFactory.getLogger("tjenestekall")
     }
 
     private val gyldigePeriodeKoder = listOf("D", "U", "F", "M", "Å", "X", "Y")
@@ -21,7 +22,9 @@ class Utbetalingshistorikk(jsonNode: JsonNode) {
             when (val periodeKode = it["periodeKode"].textValue()) {
                 in gyldigePeriodeKoder -> true
                 else -> {
-                    log.warn("Ukjent periodetype i respons fra Infotrygd: $periodeKode"); false
+                    log.warn("Ukjent periodetype i respons fra Infotrygd: $periodeKode")
+                    tjenestekallLog.warn("Ukjent periodetype i respons fra Infotrygd: $periodeKode")
+                    false
                 }
             }
         }

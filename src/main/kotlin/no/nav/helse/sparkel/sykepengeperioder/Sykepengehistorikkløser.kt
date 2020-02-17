@@ -33,9 +33,11 @@ internal class Sykepengehistorikkløser(
     }
 
     override fun onPacket(packet: JsonMessage, context: RapidsConnection.MessageContext) {
+        sikkerlogg.info("mottok melding: ${packet.toJson()}")
         try {
-            sikkerlogg.info("mottok melding: ${packet.toJson()}")
             infotrygdClient.hentHistorikk(
+                behovId = packet["@id"].asText(),
+                vedtaksperiodeId = packet["vedtaksperiodeId"].asText(),
                 fnr = packet["fødselsnummer"].asText(),
                 datoForYtelse = LocalDate.parse(packet["utgangspunktForBeregningAvYtelse"].asText())
             ).also {
