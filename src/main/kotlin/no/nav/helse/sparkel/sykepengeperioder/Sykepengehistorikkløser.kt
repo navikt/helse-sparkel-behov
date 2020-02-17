@@ -24,7 +24,7 @@ internal class Sykepengehistorikkløser(
     init {
         River(rapidsConnection).apply {
             validate { it.requireAll("@behov", listOf(behov)) }
-            validate { it.forbid("løsning") }
+            validate { it.forbid("@løsning") }
             validate { it.requireKey("@id") }
             validate { it.requireKey("fødselsnummer") }
             validate { it.requireKey("vedtaksperiodeId") }
