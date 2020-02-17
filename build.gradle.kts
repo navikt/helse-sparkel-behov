@@ -22,11 +22,9 @@ buildscript {
 }
 
 dependencies {
-    implementation("no.nav.helse:rapids-rivers:1.161aa05")
+    implementation("no.nav.helse:rapids-rivers:1.acac29f")
     implementation("io.ktor:ktor-client-cio:$ktorVersion")
     implementation("io.ktor:ktor-client-jackson:$ktorVersion")
-
-    implementation("org.apache.kafka:kafka-streams:$kafkaVersion")
 
     testImplementation("io.mockk:mockk:$mockkVersion")
     testImplementation("com.github.tomakehurst:wiremock:$wireMockVersion") {
@@ -62,7 +60,7 @@ java {
 }
 
 tasks.named<Jar>("jar") {
-    baseName = "app"
+    archiveBaseName.set("app")
 
     manifest {
         attributes["Main-Class"] = mainClass
@@ -81,11 +79,11 @@ tasks.named<Jar>("jar") {
 }
 
 tasks.named<KotlinCompile>("compileKotlin") {
-    kotlinOptions.jvmTarget = "11"
+    kotlinOptions.jvmTarget = "12"
 }
 
 tasks.named<KotlinCompile>("compileTestKotlin") {
-    kotlinOptions.jvmTarget = "11"
+    kotlinOptions.jvmTarget = "12"
 }
 
 tasks.withType<Test> {

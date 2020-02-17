@@ -1,18 +1,22 @@
 package no.nav.helse.sparkel.sykepengeperioder
 
-import no.nav.helse.rapids_rivers.AppBuilder
+import io.ktor.util.KtorExperimentalAPI
+import no.nav.helse.rapids_rivers.RapidApplication
+import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.sparkel.sykepengeperioder.infotrygd.AzureClient
 import no.nav.helse.sparkel.sykepengeperioder.infotrygd.InfotrygdClient
 import java.io.File
 import java.io.FileNotFoundException
 
+@KtorExperimentalAPI
 fun main() {
     val app = createApp(System.getenv())
     app.start()
 }
 
-fun createApp(env: Map<String, String>): AppBuilder {
-    val builder = AppBuilder(env)
+@KtorExperimentalAPI
+fun createApp(env: Map<String, String>): RapidsConnection {
+    val rapids = RapidApplication.create(env)
 
     val azureClient = AzureClient(
             tenantUrl = "${env.getValue("AZURE_TENANT_BASEURL")}/${env.getValue("AZURE_TENANT_ID")}",
@@ -26,11 +30,9 @@ fun createApp(env: Map<String, String>): AppBuilder {
             azureClient = azureClient
     )
 
-    val river = SykepengehistorikkRiver()
-    river.register(Sykepengehistorikkløser(infotrygdClient))
-    builder.register(river)
+    Sykepengehistorikkløser(rapids, infotrygdClient)
 
-    return builder
+    return rapids
 }
 
 private fun String.readFile() =

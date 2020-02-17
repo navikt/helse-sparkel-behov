@@ -30,12 +30,28 @@ internal class SykepengehistorikkløserTest {
             .registerModule(JavaTimeModule())
 
     private lateinit var sendtMelding: JsonNode
+
     private val context = object : RapidsConnection.MessageContext {
         override fun send(message: String) {
             sendtMelding = objectMapper.readTree(message)
         }
 
         override fun send(key: String, message: String) {}
+    }
+
+    private val rapid = object : RapidsConnection() {
+
+        fun sendTestMessage(message: String) {
+            listeners.forEach { it.onMessage(message, context) }
+        }
+
+        override fun publish(message: String) {}
+
+        override fun publish(key: String, message: String) {}
+
+        override fun start() {}
+
+        override fun stop() {}
     }
 
     @BeforeAll
@@ -52,7 +68,7 @@ internal class SykepengehistorikkløserTest {
 
     @Test
     internal fun `løser behov`() {
-        val behov = """{"@id": "behovsid", "@behov":["${SykepengehistorikkRiver.behov}"], "utgangspunktForBeregningAvYtelse": "2020-01-01", "fødselsnummer": "fnr" }"""
+        val behov = """{"@id": "behovsid", "@behov":["${Sykepengehistorikkløser.behov}"], "utgangspunktForBeregningAvYtelse": "2020-01-01", "fødselsnummer": "fnr", "vedtaksperiodeId": "id" }"""
 
         testBehov(behov)
 
@@ -66,7 +82,7 @@ internal class SykepengehistorikkløserTest {
 
     @Test
     internal fun `mapper også ut inntekt og dagsats`() {
-        val behov = """{"@id": "behovsid", "@behov":["${SykepengehistorikkRiver.behov}"], "utgangspunktForBeregningAvYtelse": "2020-01-01", "fødselsnummer": "fnr" }"""
+        val behov = """{"@id": "behovsid", "@behov":["${Sykepengehistorikkløser.behov}"], "utgangspunktForBeregningAvYtelse": "2020-01-01", "fødselsnummer": "fnr", "vedtaksperiodeId": "id" }"""
 
         testBehov(behov)
 
@@ -94,7 +110,7 @@ internal class SykepengehistorikkløserTest {
         )
     }
 
-    private fun JsonNode.løsning() = this.path("@løsning").path(SykepengehistorikkRiver.behov).map {
+    private fun JsonNode.løsning() = this.path("@løsning").path(Sykepengehistorikkløser.behov).map {
         Utbetalingshistorikk(it)
     }
 
@@ -131,7 +147,7 @@ internal class SykepengehistorikkløserTest {
     }
 
     private fun testBehov(behov: String) {
-        val løser = Sykepengehistorikkløser(InfotrygdClient(
+        val løser = Sykepengehistorikkløser(rapid, InfotrygdClient(
                 baseUrl = wireMockServer.baseUrl(),
                 accesstokenScope = "a_scope",
                 azureClient = AzureClient(
@@ -140,7 +156,7 @@ internal class SykepengehistorikkløserTest {
                         clientSecret = "client_secret"
                 )
         ))
-        løser.onPacket(objectMapper.readTree(behov), context)
+        rapid.sendTestMessage(behov)
     }
 
     private fun assertSykeperiode(
