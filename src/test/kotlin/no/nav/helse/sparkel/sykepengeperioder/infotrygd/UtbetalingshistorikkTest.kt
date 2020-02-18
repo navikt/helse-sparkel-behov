@@ -13,8 +13,7 @@ internal class UtbetalingshistorikkTest {
 
     @Test
     internal fun utbetalingshistorikk() {
-        val jsonNode = readJson()
-        val utbetalingshistorikk = Utbetalingshistorikk(jsonNode["sykmeldingsperioder"][1])
+        val utbetalingshistorikk = Utbetalingshistorikk(json["sykmeldingsperioder"][1])
 
         assertEquals(LocalDate.of(2018, 12, 3), utbetalingshistorikk.fom)
         assertEquals(LocalDate.of(2019, 4, 11), utbetalingshistorikk.tom)
@@ -24,11 +23,17 @@ internal class UtbetalingshistorikkTest {
 
     }
 
+    @Test
+    internal fun `parser hele lista med utbetalingshistorikk`() {
+        val utbetalingshistorikkListe = json["sykmeldingsperioder"].map { Utbetalingshistorikk(it) }
+        assertEquals(20, utbetalingshistorikkListe.size)
+        assertEquals(13, utbetalingshistorikkListe.flatMap { it.inntektsopplysninger }.size)
+    }
+
     private val objectMapper = jacksonObjectMapper()
             .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
             .registerModule(JavaTimeModule())
 
-    private fun readJson() = objectMapper.readTree(
-        File("src/test/resources/infotrygdResponse.json").readText()
-    )
+    private val json
+        get() = objectMapper.readTree(File("src/test/resources/infotrygdResponse.json").readText())
 }

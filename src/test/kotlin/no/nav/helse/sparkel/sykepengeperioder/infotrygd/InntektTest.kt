@@ -32,6 +32,16 @@ class InntektTest {
     }
 
     @Test
+    fun `kan regne om skjønnsmessig fastsatt inntekt`() {
+        assertEquals(32083, Inntektsopplysninger.PeriodeKode.SkjønnsmessigFastsatt.omregn(385000.toBigDecimal()))
+    }
+
+    @Test
+    fun `kan regne om premiegrunnlag`() {
+        assertEquals(34667, Inntektsopplysninger.PeriodeKode.Premiegrunnlag.omregn(416000.toBigDecimal()))
+    }
+
+    @Test
     fun `avrunding etter half-up prinsippet`() {
         assertEquals(41667, Inntektsopplysninger.PeriodeKode.Årlig.omregn(500000.toBigDecimal()))
         assertEquals(26017, Inntektsopplysninger.PeriodeKode.Ukentlig.omregn(6004.toBigDecimal()))
@@ -40,6 +50,6 @@ class InntektTest {
 
     @Test
     fun `kaster feil ved andre periodetyper`() {
-        assertThrows<IllegalArgumentException> { Inntektsopplysninger.PeriodeKode.verdiFraKode("X") }
+        assertThrows<IllegalArgumentException> { Inntektsopplysninger.PeriodeKode.verdiFraKode("I") }
     }
 }

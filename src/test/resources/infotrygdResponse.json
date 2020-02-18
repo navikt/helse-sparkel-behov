@@ -1669,6 +1669,112 @@
         }
         ],
         "forsikring": []
+    },
+    {
+        "ident": 1234,
+        "tknr": "1234",
+        "seq": 23456789,
+        "sykemeldtFom": "2000-04-03",
+        "sykemeldtTom": "2000-04-23",
+        "grad": "100",
+        "slutt": "2001-03-30",
+        "erArbeidsgiverPeriode": true,
+        "stansAarsakKode": "AF",
+        "stansAarsak": "AvsluttetFrisk",
+        "unntakAktivitet": "",
+        "arbeidsKategoriKode": "01",
+        "arbeidsKategori": "Arbeidstaker",
+        "arbeidsKategori99": "",
+        "erSanksjonBekreftet": "",
+        "sanksjonsDager": 0,
+        "sykemelder": "NØDNUMMER",
+        "behandlet": "2000-04-05",
+        "yrkesskadeArt": "",
+        "utbetalingList": [
+        {
+            "fom": "2000-04-19",
+            "tom": "2000-04-23",
+            "utbetalingsGrad": "100",
+            "oppgjorsType": "50",
+            "utbetalt": "2000-05-16",
+            "dagsats": 765.0,
+            "typeKode": "5",
+            "typeTekst": "ArbRef",
+            "arbOrgnr": 88888888
+        }
+        ],
+        "inntektList": [
+        {
+            "orgNr": "88888888",
+            "sykepengerFom": "2000-04-19",
+            "refusjonTom": "2000-04-30",
+            "refusjonsType": "H",
+            "periodeKode": "X",
+            "periode": "Inntekt fastsatt etter 25% avvik",
+            "loenn": 435000.0
+        }
+        ],
+        "graderingList": [
+        {
+            "gradertFom": "2000-04-03",
+            "gradertTom": "2000-04-23",
+            "grad": "100"
+        }
+        ],
+        "forsikring": []
+    },
+    {
+        "ident": 1234,
+        "tknr": "1234",
+        "seq": 23456789,
+        "sykemeldtFom": "2000-04-03",
+        "sykemeldtTom": "2000-04-23",
+        "grad": "100",
+        "slutt": "2001-03-30",
+        "erArbeidsgiverPeriode": true,
+        "stansAarsakKode": "AF",
+        "stansAarsak": "AvsluttetFrisk",
+        "unntakAktivitet": "",
+        "arbeidsKategoriKode": "01",
+        "arbeidsKategori": "Arbeidstaker",
+        "arbeidsKategori99": "",
+        "erSanksjonBekreftet": "",
+        "sanksjonsDager": 0,
+        "sykemelder": "NØDNUMMER",
+        "behandlet": "2000-04-05",
+        "yrkesskadeArt": "",
+        "utbetalingList": [
+        {
+            "fom": "2000-04-19",
+            "tom": "2000-04-23",
+            "utbetalingsGrad": "100",
+            "oppgjorsType": "50",
+            "utbetalt": "2000-05-16",
+            "dagsats": 765.0,
+            "typeKode": "5",
+            "typeTekst": "ArbRef",
+            "arbOrgnr": 88888888
+        }
+        ],
+        "inntektList": [
+        {
+            "orgNr": "88888888",
+            "sykepengerFom": "2000-04-19",
+            "refusjonTom": "2000-04-30",
+            "refusjonsType": "H",
+            "periodeKode": "Y",
+            "periode": "Premiegrunnlag oppdragstaker (gjelder de 2 første ukene)",
+            "loenn": 4350.5
+        }
+        ],
+        "graderingList": [
+        {
+            "gradertFom": "2000-04-03",
+            "gradertTom": "2000-04-23",
+            "grad": "100"
+        }
+        ],
+        "forsikring": []
     }
     ]
 }

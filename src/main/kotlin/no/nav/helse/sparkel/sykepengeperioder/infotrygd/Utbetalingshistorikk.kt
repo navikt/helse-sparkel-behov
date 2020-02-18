@@ -18,37 +18,38 @@ class Utbetalingshistorikk(jsonNode: JsonNode) {
     val tom: LocalDate = LocalDate.parse(jsonNode["sykemeldtTom"].textValue())
     val grad: String = jsonNode["grad"].textValue()
     val inntektsopplysninger: List<Inntektsopplysninger> = jsonNode["inntektList"]
-        .filter {
-            when (val periodeKode = it["periodeKode"].textValue()) {
-                in gyldigePeriodeKoder -> true
-                else -> {
-                    log.warn("Ukjent periodetype i respons fra Infotrygd: $periodeKode")
-                    tjenestekallLog.warn("Ukjent periodetype i respons fra Infotrygd: $periodeKode")
-                    false
+            .filter {
+                when (val periodeKode = it["periodeKode"].textValue()) {
+                    in gyldigePeriodeKoder -> true
+                    else -> {
+                        log.warn("Ukjent periodetype i respons fra Infotrygd: $periodeKode")
+                        tjenestekallLog.warn("Ukjent periodetype i respons fra Infotrygd: $periodeKode")
+                        false
+                    }
                 }
             }
-        }
-        .map { Inntektsopplysninger(it) }
+            .map { Inntektsopplysninger(it) }
+            .filter(Inntektsopplysninger::skalTilSpleis)
 
     val utbetalteSykeperioder: List<Utbetaling> = jsonNode["utbetalingList"]
-        .map { Utbetaling(it, inntektsopplysninger) }
+            .map { Utbetaling(it, inntektsopplysninger) }
 }
 
 data class Utbetaling(
-    private val jsonNode: JsonNode,
-    private val inntektsopplysninger: List<Inntektsopplysninger>
+        private val jsonNode: JsonNode,
+        private val inntektsopplysninger: List<Inntektsopplysninger>
 ) {
     val fom: LocalDate = LocalDate.parse(jsonNode["fom"].textValue())
     val tom: LocalDate = LocalDate.parse(jsonNode["tom"].textValue())
-    val utbetalingsGrad = jsonNode["utbetalingsGrad"].textValue()
-    val oppgjorsType = jsonNode["oppgjorsType"].textValue()
-    val utbetalt = jsonNode["utbetalt"].takeUnless { it.isNull }?.let { LocalDate.parse(it.textValue()) }
-    val dagsats = jsonNode["dagsats"].doubleValue()
-    val typeKode = jsonNode["typeKode"].textValue()
-    val typeTekst = jsonNode["typeTekst"].textValue()
-    val orgnummer = jsonNode["arbOrgnr"].asText()
-    val inntektPerMåned =
-        inntektsopplysninger.sortedBy { it.sykepengerFom }.lastOrNull { !fom.isBefore(it.sykepengerFom) }?.inntekt
+    val utbetalingsGrad: String = jsonNode["utbetalingsGrad"].textValue()
+    val oppgjorsType: String = jsonNode["oppgjorsType"].textValue()
+    val utbetalt: LocalDate? = jsonNode["utbetalt"].takeUnless { it.isNull }?.let { LocalDate.parse(it.textValue()) }
+    val dagsats: Double = jsonNode["dagsats"].doubleValue()
+    val typeKode: String = jsonNode["typeKode"].textValue()
+    val typeTekst: String = jsonNode["typeTekst"].textValue()
+    val orgnummer: String = jsonNode["arbOrgnr"].asText()
+    val inntektPerMåned: Int? =
+            inntektsopplysninger.sortedBy { it.sykepengerFom }.lastOrNull { !fom.isBefore(it.sykepengerFom) }?.inntekt
 
 }
 
@@ -60,17 +61,21 @@ data class Inntektsopplysninger(private val jsonNode: JsonNode) {
     val inntekt: Int = periodeKode.omregn(lønn)
     val orgnummer: String = jsonNode["orgNr"].textValue()
     val refusjonTom: LocalDate? =
-        jsonNode["refusjonTom"].takeUnless { it.isNull }?.let { LocalDate.parse(it.textValue()) }
+            jsonNode["refusjonTom"].takeUnless { it.isNull }?.let { LocalDate.parse(it.textValue()) }
+
+    internal fun skalTilSpleis() = periodeKode != PeriodeKode.Premiegrunnlag
 
     internal enum class PeriodeKode(
-        val fraksjon: BigDecimal,
-        val kode: String
+            val fraksjon: BigDecimal,
+            val kode: String
     ) {
         Daglig(260.0.toBigDecimal().setScale(10) / 12.0.toBigDecimal(), "D"),
         Ukentlig(52.0.toBigDecimal().setScale(10) / 12.0.toBigDecimal(), "U"),
         Biukentlig(26.0.toBigDecimal().setScale(10) / 12.0.toBigDecimal(), "F"),
         Månedlig(1.0.toBigDecimal().setScale(10), "M"),
-        Årlig(1.0.toBigDecimal().setScale(10) / 12.0.toBigDecimal(), "Å");
+        Årlig(1.0.toBigDecimal().setScale(10) / 12.0.toBigDecimal(), "Å"),
+        SkjønnsmessigFastsatt(1.0.toBigDecimal().setScale(10) / 12.0.toBigDecimal(), "X"),
+        Premiegrunnlag(1.0.toBigDecimal().setScale(10) / 12.0.toBigDecimal(), "Y");
 
         fun omregn(lønn: BigDecimal): Int = (lønn * fraksjon).setScale(0, RoundingMode.HALF_UP).toInt()
 
