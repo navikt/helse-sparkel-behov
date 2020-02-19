@@ -31,8 +31,12 @@ class Utbetalingshistorikk(jsonNode: JsonNode) {
             .map { Inntektsopplysninger(it) }
             .filter(Inntektsopplysninger::skalTilSpleis)
 
-    val utbetalteSykeperioder: List<Utbetaling> = jsonNode["utbetalingList"]
-            .map { Utbetaling(it, inntektsopplysninger) }
+    private val pair = jsonNode["utbetalingList"]
+        .partition { it["typeKode"].textValue() != "" }
+
+    val utbetalteSykeperioder = pair.first.map { Utbetaling(it, inntektsopplysninger) }
+    val ukjentePerioder = pair.second
+
 }
 
 data class Utbetaling(

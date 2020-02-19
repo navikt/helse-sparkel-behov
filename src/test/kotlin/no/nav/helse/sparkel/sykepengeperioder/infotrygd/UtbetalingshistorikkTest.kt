@@ -20,6 +20,7 @@ internal class UtbetalingshistorikkTest {
         assertEquals("050", utbetalingshistorikk.grad)
         assertNotNull(utbetalingshistorikk.inntektsopplysninger)
         assertNotNull(utbetalingshistorikk.utbetalteSykeperioder)
+        assertEquals(1, utbetalingshistorikk.ukjentePerioder.size)
 
     }
 
