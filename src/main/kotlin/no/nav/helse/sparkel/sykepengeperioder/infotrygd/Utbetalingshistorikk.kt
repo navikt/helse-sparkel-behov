@@ -1,6 +1,7 @@
 package no.nav.helse.sparkel.sykepengeperioder.infotrygd
 
 import com.fasterxml.jackson.databind.JsonNode
+import no.nav.helse.rapids_rivers.isMissingOrNull
 import org.slf4j.LoggerFactory
 import java.math.BigDecimal
 import java.math.RoundingMode
@@ -32,7 +33,7 @@ class Utbetalingshistorikk(jsonNode: JsonNode) {
             .filter(Inntektsopplysninger::skalTilSpleis)
 
     private val pair = jsonNode["utbetalingList"]
-        .partition { it["typeKode"].textValue() != "" }
+        .partition { it["typeKode"].textValue() != "" && !it["fom"].isMissingOrNull() && !it["tom"].isMissingOrNull() }
 
     val utbetalteSykeperioder = pair.first.map { Utbetaling(it, inntektsopplysninger) }
     val ukjentePerioder = pair.second
