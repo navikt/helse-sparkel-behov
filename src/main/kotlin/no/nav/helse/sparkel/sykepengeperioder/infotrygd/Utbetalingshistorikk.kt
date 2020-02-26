@@ -19,31 +19,29 @@ class Utbetalingshistorikk(jsonNode: JsonNode) {
     val tom: LocalDate = LocalDate.parse(jsonNode["sykemeldtTom"].textValue())
     val grad: String = jsonNode["grad"].textValue()
     val inntektsopplysninger: List<Inntektsopplysninger> = jsonNode["inntektList"]
-            .filter {
-                when (val periodeKode = it["periodeKode"].textValue()) {
-                    in gyldigePeriodeKoder -> true
-                    else -> {
-                        log.warn("Ukjent periodetype i respons fra Infotrygd: $periodeKode")
-                        tjenestekallLog.warn("Ukjent periodetype i respons fra Infotrygd: $periodeKode")
-                        false
-                    }
+        .filter {
+            when (val periodeKode = it["periodeKode"].textValue()) {
+                in gyldigePeriodeKoder -> true
+                else -> {
+                    log.warn("Ukjent periodetype i respons fra Infotrygd: $periodeKode")
+                    tjenestekallLog.warn("Ukjent periodetype i respons fra Infotrygd: $periodeKode")
+                    false
                 }
             }
-            .map { Inntektsopplysninger(it) }
-            .filter(Inntektsopplysninger::skalTilSpleis)
-    val graderingsliste: List<Graderingsperiode> = jsonNode["graderingList"].map { Graderingsperiode((it)) }
+        }
+        .map { Inntektsopplysninger(it) }
+        .filter(Inntektsopplysninger::skalTilSpleis)
 
-    private val pair = jsonNode["utbetalingList"]
+    private val utbetalingspair = jsonNode["utbetalingList"]
         .partition { it["typeKode"].textValue() != "" && !it["fom"].isMissingOrNull() && !it["tom"].isMissingOrNull() }
 
-    val utbetalteSykeperioder = pair.first.map { Utbetaling(it, inntektsopplysninger) }
-    val ukjentePerioder = pair.second
-
+    val utbetalteSykeperioder = utbetalingspair.first.map { Utbetaling(it, inntektsopplysninger) }
+    val ukjentePerioder = utbetalingspair.second
 }
 
 data class Utbetaling(
-        private val jsonNode: JsonNode,
-        private val inntektsopplysninger: List<Inntektsopplysninger>
+    private val jsonNode: JsonNode,
+    private val inntektsopplysninger: List<Inntektsopplysninger>
 ) {
     val fom: LocalDate = LocalDate.parse(jsonNode["fom"].textValue())
     val tom: LocalDate = LocalDate.parse(jsonNode["tom"].textValue())
@@ -55,7 +53,7 @@ data class Utbetaling(
     val typeTekst: String = jsonNode["typeTekst"].textValue()
     val orgnummer: String = jsonNode["arbOrgnr"].asText()
     val inntektPerMåned: Int? =
-            inntektsopplysninger.sortedBy { it.sykepengerFom }.lastOrNull { !fom.isBefore(it.sykepengerFom) }?.inntekt
+        inntektsopplysninger.sortedBy { it.sykepengerFom }.lastOrNull { !fom.isBefore(it.sykepengerFom) }?.inntekt
 
 }
 
@@ -67,13 +65,13 @@ data class Inntektsopplysninger(private val jsonNode: JsonNode) {
     val inntekt: Int = periodeKode.omregn(lønn)
     val orgnummer: String = jsonNode["orgNr"].textValue()
     val refusjonTom: LocalDate? =
-            jsonNode["refusjonTom"].takeUnless { it.isNull }?.let { LocalDate.parse(it.textValue()) }
+        jsonNode["refusjonTom"].takeUnless { it.isNull }?.let { LocalDate.parse(it.textValue()) }
 
     internal fun skalTilSpleis() = periodeKode != PeriodeKode.Premiegrunnlag
 
     internal enum class PeriodeKode(
-            val fraksjon: BigDecimal,
-            val kode: String
+        val fraksjon: BigDecimal,
+        val kode: String
     ) {
         Daglig(260.0.toBigDecimal().setScale(10) / 12.0.toBigDecimal(), "D"),
         Ukentlig(52.0.toBigDecimal().setScale(10) / 12.0.toBigDecimal(), "U"),
@@ -91,10 +89,4 @@ data class Inntektsopplysninger(private val jsonNode: JsonNode) {
             }
         }
     }
-}
-
-data class Graderingsperiode(private val jsonNode: JsonNode) {
-    val fom: LocalDate = LocalDate.parse(jsonNode["gradertFom"].textValue())
-    val tom: LocalDate = LocalDate.parse(jsonNode["gradertTom"].textValue())
-    val grad: Double = jsonNode["grad"].asDouble()
 }

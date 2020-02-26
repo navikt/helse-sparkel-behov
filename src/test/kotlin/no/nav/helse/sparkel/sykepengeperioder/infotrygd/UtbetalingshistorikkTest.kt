@@ -22,9 +22,6 @@ internal class UtbetalingshistorikkTest {
         assertNotNull(utbetalingshistorikk.inntektsopplysninger)
         assertNotNull(utbetalingshistorikk.utbetalteSykeperioder)
         assertEquals(1, utbetalingshistorikk.ukjentePerioder.size)
-        assertEquals(11, utbetalingshistorikk.graderingsliste.size)
-        assertEquals(50.0, utbetalingshistorikk.graderingsliste[0].grad)
-
     }
 
     @Test
@@ -38,7 +35,6 @@ internal class UtbetalingshistorikkTest {
         assertNotNull(utbetalingshistorikk.inntektsopplysninger)
         assertNotNull(utbetalingshistorikk.utbetalteSykeperioder)
         assertEquals(3, utbetalingshistorikk.ukjentePerioder.size)
-
     }
 
     @Test
