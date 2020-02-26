@@ -78,6 +78,7 @@ internal class SykepengehistorikkløserTest {
         assertEquals(3.januar, perioder[0].fom)
         assertEquals(23.januar, perioder[0].tom)
         assertEquals("100", perioder[0].grad)
+        assertEquals(100.00, perioder[0].graderingsliste[0].grad)
     }
 
     @Test
@@ -125,6 +126,7 @@ internal class SykepengehistorikkløserTest {
         val inntektsopplysninger = json["inntektsopplysninger"].map {
             Inntektsopplysning(it)
         }
+        val graderingsliste = json["graderingsliste"].map { Graderingsperiode(it) }
 
         class UtbetalteSykeperiode(json: JsonNode) {
             val fom = json["fom"].asLocalDate()
@@ -139,6 +141,12 @@ internal class SykepengehistorikkløserTest {
             val sykepengerFom = json["sykepengerFom"].asLocalDate()
             val inntekt = json["inntekt"].asInt()
             val orgnummer = json["orgnummer"].asText()
+        }
+
+        class Graderingsperiode(json: JsonNode) {
+            val fom = json["fom"].asLocalDate()
+            val tom = json["tom"].asLocalDate()
+            val grad = json["grad"].asDouble()
         }
 
         private companion object {

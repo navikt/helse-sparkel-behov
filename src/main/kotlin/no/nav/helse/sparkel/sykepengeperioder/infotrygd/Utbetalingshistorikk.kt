@@ -31,6 +31,7 @@ class Utbetalingshistorikk(jsonNode: JsonNode) {
             }
             .map { Inntektsopplysninger(it) }
             .filter(Inntektsopplysninger::skalTilSpleis)
+    val graderingsliste: List<Graderingsperiode> = jsonNode["graderingList"].map { Graderingsperiode((it)) }
 
     private val pair = jsonNode["utbetalingList"]
         .partition { it["typeKode"].textValue() != "" && !it["fom"].isMissingOrNull() && !it["tom"].isMissingOrNull() }
@@ -90,4 +91,10 @@ data class Inntektsopplysninger(private val jsonNode: JsonNode) {
             }
         }
     }
+}
+
+data class Graderingsperiode(private val jsonNode: JsonNode) {
+    val fom: LocalDate = LocalDate.parse(jsonNode["gradertFom"].textValue())
+    val tom: LocalDate = LocalDate.parse(jsonNode["gradertTom"].textValue())
+    val grad: Double = jsonNode["grad"].asDouble()
 }
