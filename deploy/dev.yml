@@ -1,7 +1,7 @@
 apiVersion: nais.io/v1alpha1
 kind: Application
 metadata:
-  name: sparkel-sykepengeperioder
+  name: {{app}}
   namespace: default
   labels:
     team: {{team}}
@@ -35,23 +35,24 @@ spec:
     enabled: true
     paths:
       - mountPath: /var/run/secrets/nais.io/vault
-        kvPath: /kv/prod/fss/sparkel-sykepengeperioder/default
+        kvPath: /kv/preprod/fss/sparkel-sykepengeperioder/default
       - mountPath: /var/run/secrets/nais.io/azure
-        kvPath: /azuread/data/prod/creds/sparkel-sykepengeperioder
+        kvPath: /azuread/data/dev/creds/sparkel-sykepengeperioder
       - mountPath: /var/run/secrets/nais.io/service_user
-        kvPath: /serviceuser/data/prod/srvsparkelsykepeng
+        kvPath: /serviceuser/data/dev/srvsparkelsykepeng
   env:
   - name: KAFKA_BOOTSTRAP_SERVERS
-    value: a01apvl00145.adeo.no:8443,a01apvl00146.adeo.no:8443,a01apvl00147.adeo.no:8443,a01apvl00148.adeo.no:8443,a01apvl00149.adeo.no:8443,a01apvl00150.adeo.no:8443
+    value: b27apvl00045.preprod.local:8443,b27apvl00046.preprod.local:8443,b27apvl00047.preprod.local:8443
   - name: KAFKA_CONSUMER_GROUP_ID
     value: sparkel-sykepengeperioder-v1
   - name: KAFKA_RAPID_TOPIC
     value: helse-rapid-v1
   - name: AZURE_TENANT_ID
-    value: 62366534-1ec3-4962-8869-9b5535279d0b
+    value: 966ac572-f5b7-4bbe-aa88-c76419c0f851
   - name: AZURE_TENANT_BASEURL
     value: https://login.microsoftonline.com
   - name: INFOTRYGD_SCOPE
-    value: api://847deffa-0b46-4b8f-ae79-c7773ee3dfb3/.default
+    value: api://df41895c-b7f3-4b8c-b333-8801710093ad/.default
   - name: INFOTRYGD_URL
     value: http://infotrygd-sykepenger.default.svc.nais.local
+
