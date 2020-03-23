@@ -26,13 +26,10 @@ class InfotrygdClient(
         behovId: String,
         vedtaksperiodeId: String,
         fnr: String,
-        datoForYtelse: LocalDate
+        fom: LocalDate,
+        tom: LocalDate
     ): List<Utbetalingshistorikk> {
-        val historikkFom = datoForYtelse.minusYears(3)
-        val url =
-            "${baseUrl}/v1/hentSykepengerListe?fnr=$fnr&fraDato=${historikkFom.format(DateTimeFormatter.ISO_DATE)}&tilDato=${datoForYtelse.format(
-                DateTimeFormatter.ISO_DATE
-            )}"
+        val url = "${baseUrl}/v1/hentSykepengerListe?fnr=$fnr&fraDato=${fom.format(DateTimeFormatter.ISO_DATE)}&tilDato=${tom.format(DateTimeFormatter.ISO_DATE)}"
         val (responseCode, responseBody) = with(URL(url).openConnection() as HttpURLConnection) {
             requestMethod = "GET"
 

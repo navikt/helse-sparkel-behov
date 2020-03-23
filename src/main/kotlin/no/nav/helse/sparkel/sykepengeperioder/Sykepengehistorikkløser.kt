@@ -27,7 +27,7 @@ internal class Sykepengehistorikkløser(
             validate { it.requireKey("@id") }
             validate { it.requireKey("fødselsnummer") }
             validate { it.requireKey("vedtaksperiodeId") }
-            validate { it.requireKey("utgangspunktForBeregningAvYtelse") }
+            validate { it.requireKey("historikkFom", "historikkTom") }
         }.register(this)
     }
 
@@ -38,7 +38,8 @@ internal class Sykepengehistorikkløser(
                 behovId = packet["@id"].asText(),
                 vedtaksperiodeId = packet["vedtaksperiodeId"].asText(),
                 fnr = packet["fødselsnummer"].asText(),
-                datoForYtelse = LocalDate.parse(packet["utgangspunktForBeregningAvYtelse"].asText())
+                fom = LocalDate.parse(packet["historikkFom"].asText()),
+                tom = LocalDate.parse(packet["historikkTom"].asText())
             ).also {
                 packet.setLøsning(behov, it)
             }

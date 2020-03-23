@@ -68,7 +68,7 @@ internal class SykepengehistorikkløserTest {
 
     @Test
     internal fun `løser behov`() {
-        val behov = """{"@id": "behovsid", "@behov":["${Sykepengehistorikkløser.behov}"], "utgangspunktForBeregningAvYtelse": "2020-01-01", "fødselsnummer": "fnr", "vedtaksperiodeId": "id" }"""
+        val behov = """{"@id": "behovsid", "@behov":["${Sykepengehistorikkløser.behov}"], "historikkFom": "2016-01-01", "historikkTom": "2020-01-01", "fødselsnummer": "fnr", "vedtaksperiodeId": "id" }"""
 
         testBehov(behov)
 
@@ -79,7 +79,7 @@ internal class SykepengehistorikkløserTest {
 
     @Test
     internal fun `mapper også ut inntekt og dagsats`() {
-        val behov = """{"@id": "behovsid", "@behov":["${Sykepengehistorikkløser.behov}"], "utgangspunktForBeregningAvYtelse": "2020-01-01", "fødselsnummer": "fnr", "vedtaksperiodeId": "id" }"""
+        val behov = """{"@id": "behovsid", "@behov":["${Sykepengehistorikkløser.behov}"], "historikkFom": "2016-01-01", "historikkTom": "2020-01-01", "fødselsnummer": "fnr", "vedtaksperiodeId": "id" }"""
 
         testBehov(behov)
 
