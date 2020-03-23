@@ -2,7 +2,6 @@ package no.nav.helse.sparkel.sykepengeperioder
 
 import net.logstash.logback.argument.StructuredArguments.keyValue
 import no.nav.helse.rapids_rivers.JsonMessage
-import no.nav.helse.rapids_rivers.MessageProblems
 import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.rapids_rivers.River
 import no.nav.helse.sparkel.sykepengeperioder.infotrygd.InfotrygdClient
@@ -68,8 +67,6 @@ internal class Sykepengehistorikkløser(
             )
         }
     }
-
-    override fun onError(problems: MessageProblems, context: RapidsConnection.MessageContext) {}
 
     private fun JsonMessage.setLøsning(nøkkel: String, data: Any) {
         this["@løsning"] = mapOf(

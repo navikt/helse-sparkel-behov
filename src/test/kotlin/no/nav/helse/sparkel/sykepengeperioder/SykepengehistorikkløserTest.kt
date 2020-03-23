@@ -75,9 +75,6 @@ internal class SykepengehistorikkløserTest {
         val perioder = sendtMelding.løsning()
 
         assertEquals(1, perioder.size)
-        assertEquals(3.januar, perioder[0].fom)
-        assertEquals(23.januar, perioder[0].tom)
-        assertEquals("100", perioder[0].grad)
     }
 
     @Test
@@ -89,8 +86,6 @@ internal class SykepengehistorikkløserTest {
         val perioder = sendtMelding.løsning()
 
         assertEquals(1, perioder.size)
-        assertEquals(3.januar, perioder[0].fom)
-        assertEquals(23.januar, perioder[0].tom)
 
         assertSykeperiode(
                 sykeperiode = perioder[0].utbetalteSykeperioder[0],
@@ -116,9 +111,6 @@ internal class SykepengehistorikkløserTest {
 
     private class Utbetalingshistorikk(json: JsonNode) {
 
-        val fom = json["fom"].asLocalDate()
-        val tom = json["tom"].asLocalDate()
-        val grad = json["grad"].asText()
         val utbetalteSykeperioder = json["utbetalteSykeperioder"].map {
             UtbetalteSykeperiode(it)
         }
@@ -147,7 +139,7 @@ internal class SykepengehistorikkløserTest {
     }
 
     private fun testBehov(behov: String) {
-        val løser = Sykepengehistorikkløser(rapid, InfotrygdClient(
+        Sykepengehistorikkløser(rapid, InfotrygdClient(
                 baseUrl = wireMockServer.baseUrl(),
                 accesstokenScope = "a_scope",
                 azureClient = AzureClient(

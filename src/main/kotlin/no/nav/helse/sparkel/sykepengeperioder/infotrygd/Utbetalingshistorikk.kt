@@ -14,10 +14,6 @@ class Utbetalingshistorikk(jsonNode: JsonNode) {
     }
 
     private val gyldigePeriodeKoder = listOf("D", "U", "F", "M", "Å", "X", "Y")
-
-    val fom: LocalDate = LocalDate.parse(jsonNode["sykemeldtFom"].textValue())
-    val tom: LocalDate = LocalDate.parse(jsonNode["sykemeldtTom"].textValue())
-    val grad: String = jsonNode["grad"].textValue()
     val inntektsopplysninger: List<Inntektsopplysninger> = jsonNode["inntektList"]
         .filter {
             when (val periodeKode = it["periodeKode"].textValue()) {
