@@ -1,7 +1,6 @@
 package no.nav.helse.sparkel.sykepengeperioder.infotrygd
 
 import com.fasterxml.jackson.databind.JsonNode
-import no.nav.helse.rapids_rivers.isMissingOrNull
 import org.slf4j.LoggerFactory
 import java.math.BigDecimal
 import java.math.RoundingMode
@@ -28,19 +27,15 @@ class Utbetalingshistorikk(jsonNode: JsonNode) {
         .map { Inntektsopplysninger(it) }
         .filter(Inntektsopplysninger::skalTilSpleis)
 
-    private val utbetalingspair = jsonNode["utbetalingList"]
-        .partition { it["typeKode"].textValue() != "" && !it["fom"].isMissingOrNull() && !it["tom"].isMissingOrNull() }
-
-    val utbetalteSykeperioder = utbetalingspair.first.map { Utbetaling(it, inntektsopplysninger) }
-    val ukjentePerioder = utbetalingspair.second
+    val utbetalteSykeperioder = jsonNode["utbetalingList"].map { Utbetaling(it, inntektsopplysninger) }
 }
 
 data class Utbetaling(
     private val jsonNode: JsonNode,
     private val inntektsopplysninger: List<Inntektsopplysninger>
 ) {
-    val fom: LocalDate = LocalDate.parse(jsonNode["fom"].textValue())
-    val tom: LocalDate = LocalDate.parse(jsonNode["tom"].textValue())
+    val fom: LocalDate? = jsonNode["fom"]?.takeUnless { it.isNull }?.textValue()?.let { LocalDate.parse(it) }
+    val tom: LocalDate? = jsonNode["tom"]?.takeUnless { it.isNull }?.textValue()?.let { LocalDate.parse(it) }
     val utbetalingsGrad: String = jsonNode["utbetalingsGrad"].textValue()
     val oppgjorsType: String = jsonNode["oppgjorsType"].textValue()
     val utbetalt: LocalDate? = jsonNode["utbetalt"].takeUnless { it.isNull }?.let { LocalDate.parse(it.textValue()) }
@@ -48,9 +43,6 @@ data class Utbetaling(
     val typeKode: String = jsonNode["typeKode"].textValue()
     val typeTekst: String = jsonNode["typeTekst"].textValue()
     val orgnummer: String = jsonNode["arbOrgnr"].asText()
-    val inntektPerMåned: Int? =
-        inntektsopplysninger.sortedBy { it.sykepengerFom }.lastOrNull { !fom.isBefore(it.sykepengerFom) }?.inntekt
-
 }
 
 data class Inntektsopplysninger(private val jsonNode: JsonNode) {

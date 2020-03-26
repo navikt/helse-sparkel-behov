@@ -93,7 +93,6 @@ internal class SykepengehistorikkløserTest {
                 tom = 23.januar,
                 grad = "100",
                 orgnummer = orgnummer,
-                inntektPerMåned = 18852,
                 dagsats = 870.0
         )
 
@@ -123,7 +122,6 @@ internal class SykepengehistorikkløserTest {
             val tom = json["tom"].asLocalDate()
             val utbetalingsGrad = json["utbetalingsGrad"].asText()
             val orgnummer = json["orgnummer"].asText()
-            val inntektPerMåned = json["inntektPerMåned"].asInt()
             val dagsats = json["dagsats"].asDouble()
         }
 
@@ -157,14 +155,12 @@ internal class SykepengehistorikkløserTest {
             tom: LocalDate,
             grad: String,
             orgnummer: String,
-            inntektPerMåned: Int,
             dagsats: Double
     ) {
         assertEquals(fom, sykeperiode.fom)
         assertEquals(tom, sykeperiode.tom)
         assertEquals(grad, sykeperiode.utbetalingsGrad)
         assertEquals(orgnummer, sykeperiode.orgnummer)
-        assertEquals(inntektPerMåned, sykeperiode.inntektPerMåned)
         assertEquals(dagsats, sykeperiode.dagsats)
     }
 
