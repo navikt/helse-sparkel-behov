@@ -5,6 +5,7 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
+import java.time.LocalDate
 
 internal class UtbetalingshistorikkTest {
 
@@ -15,6 +16,7 @@ internal class UtbetalingshistorikkTest {
 
         assertNotNull(utbetalingshistorikk.inntektsopplysninger)
         assertNotNull(utbetalingshistorikk.utbetalteSykeperioder)
+        assertEquals(LocalDate.of(2019, 11, 8), utbetalingshistorikk.maksDato)
         assertEquals(12,utbetalingshistorikk.utbetalteSykeperioder.size)
         assertEquals("", utbetalingshistorikk.utbetalteSykeperioder[11].typeKode)
     }

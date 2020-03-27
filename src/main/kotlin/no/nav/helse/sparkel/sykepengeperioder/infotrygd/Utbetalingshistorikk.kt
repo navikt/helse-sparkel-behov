@@ -28,6 +28,7 @@ class Utbetalingshistorikk(jsonNode: JsonNode) {
         .filter(Inntektsopplysninger::skalTilSpleis)
 
     val utbetalteSykeperioder = jsonNode["utbetalingList"].map { Utbetaling(it, inntektsopplysninger) }
+    val maksDato: LocalDate? = jsonNode["slutt"]?.takeUnless { it.isNull }?.textValue()?.let { LocalDate.parse(it) }
 }
 
 data class Utbetaling(
