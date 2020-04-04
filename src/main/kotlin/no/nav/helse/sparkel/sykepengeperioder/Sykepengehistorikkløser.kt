@@ -1,12 +1,13 @@
 package no.nav.helse.sparkel.sykepengeperioder
 
+import com.fasterxml.jackson.databind.JsonNode
 import net.logstash.logback.argument.StructuredArguments.keyValue
 import no.nav.helse.rapids_rivers.JsonMessage
 import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.rapids_rivers.River
+import no.nav.helse.rapids_rivers.asLocalDate
 import no.nav.helse.sparkel.sykepengeperioder.infotrygd.InfotrygdClient
 import org.slf4j.LoggerFactory
-import java.time.LocalDate
 
 internal class Sykepengehistorikkløser(
     rapidsConnection: RapidsConnection,
@@ -22,12 +23,13 @@ internal class Sykepengehistorikkløser(
 
     init {
         River(rapidsConnection).apply {
-            validate { it.requireAll("@behov", listOf(behov)) }
+            validate { it.requireContains("@behov", behov) }
             validate { it.forbid("@løsning") }
             validate { it.requireKey("@id") }
             validate { it.requireKey("fødselsnummer") }
             validate { it.requireKey("vedtaksperiodeId") }
-            validate { it.requireKey("historikkFom", "historikkTom") }
+            validate { it.require("historikkFom", JsonNode::asLocalDate) }
+            validate { it.require("historikkTom", JsonNode::asLocalDate) }
         }.register(this)
     }
 
@@ -38,11 +40,9 @@ internal class Sykepengehistorikkløser(
                 behovId = packet["@id"].asText(),
                 vedtaksperiodeId = packet["vedtaksperiodeId"].asText(),
                 fnr = packet["fødselsnummer"].asText(),
-                fom = LocalDate.parse(packet["historikkFom"].asText()),
-                tom = LocalDate.parse(packet["historikkTom"].asText())
-            ).also {
-                packet.setLøsning(behov, it)
-            }
+                fom = packet["historikkFom"].asLocalDate(),
+                tom = packet["historikkTom"].asLocalDate()
+            ).also { packet.setLøsning(behov, it) }
             log.info(
                 "løser behov: {} for {}",
                 keyValue("id", packet["@id"].asText()),
