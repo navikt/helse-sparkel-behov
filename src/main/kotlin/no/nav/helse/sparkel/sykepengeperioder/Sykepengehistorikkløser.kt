@@ -2,10 +2,7 @@ package no.nav.helse.sparkel.sykepengeperioder
 
 import com.fasterxml.jackson.databind.JsonNode
 import net.logstash.logback.argument.StructuredArguments.keyValue
-import no.nav.helse.rapids_rivers.JsonMessage
-import no.nav.helse.rapids_rivers.RapidsConnection
-import no.nav.helse.rapids_rivers.River
-import no.nav.helse.rapids_rivers.asLocalDate
+import no.nav.helse.rapids_rivers.*
 import no.nav.helse.sparkel.sykepengeperioder.infotrygd.InfotrygdClient
 import org.slf4j.LoggerFactory
 
@@ -23,14 +20,18 @@ internal class Sykepengehistorikkløser(
 
     init {
         River(rapidsConnection).apply {
-            validate { it.requireContains("@behov", behov) }
-            validate { it.forbid("@løsning") }
+            validate { it.demandAll("@behov", listOf(behov)) }
+            validate { it.rejectKey("@løsning") }
             validate { it.requireKey("@id") }
             validate { it.requireKey("fødselsnummer") }
             validate { it.requireKey("vedtaksperiodeId") }
             validate { it.require("historikkFom", JsonNode::asLocalDate) }
             validate { it.require("historikkTom", JsonNode::asLocalDate) }
         }.register(this)
+    }
+
+    override fun onError(problems: MessageProblems, context: RapidsConnection.MessageContext) {
+        sikkerlogg.error("forstod ikke $behov:\n${problems.toExtendedReport()}")
     }
 
     override fun onPacket(packet: JsonMessage, context: RapidsConnection.MessageContext) {
