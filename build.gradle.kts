@@ -6,7 +6,7 @@ val junitJupiterVersion = "5.6.0"
 val mainClass = "no.nav.helse.sparkel.sykepengeperioder.AppKt"
 
 plugins {
-    kotlin("jvm") version "1.3.70"
+    kotlin("jvm") version "1.3.72"
 }
 
 buildscript {
@@ -16,7 +16,7 @@ buildscript {
 }
 
 dependencies {
-    implementation("com.github.navikt:rapids-and-rivers:1.a1c8748")
+    implementation("com.github.navikt:rapids-and-rivers:1.73dddb5")
 
     testImplementation("io.mockk:mockk:$mockkVersion")
     testImplementation("com.github.tomakehurst:wiremock:$wireMockVersion") {
@@ -34,7 +34,7 @@ val githubPassword: String by project
 
 repositories {
     mavenCentral()
-    maven("http://packages.confluent.io/maven/")
+    maven("https://packages.confluent.io/maven/")
     maven {
         url = uri("https://maven.pkg.github.com/navikt/rapids-and-rivers")
         credentials {
