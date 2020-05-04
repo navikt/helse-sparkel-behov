@@ -55,6 +55,7 @@ data class Inntektsopplysninger(private val jsonNode: JsonNode) {
     val orgnummer: String = jsonNode["orgNr"].textValue()
     val refusjonTom: LocalDate? =
         jsonNode["refusjonTom"].takeUnless { it.isNull }?.let { LocalDate.parse(it.textValue()) }
+    val refusjonTilArbeidsgiver = "J" == jsonNode.path("refusjonsType").asText()
 
     internal fun skalTilSpleis() = periodeKode != PeriodeKode.Premiegrunnlag
 
