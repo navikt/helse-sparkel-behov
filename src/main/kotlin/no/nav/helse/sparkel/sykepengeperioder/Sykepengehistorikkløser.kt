@@ -55,7 +55,14 @@ internal class Sykepengehistorikkløser(
                 keyValue("vedtaksperiodeId", packet["vedtaksperiodeId"].asText())
             )
 
-            context.send(packet.toJson())
+            context.send(packet.toJson().also {
+                sikkerlogg.info(
+                    "sender svar {} for {}:\n\t{}",
+                    keyValue("id", packet["@id"].asText()),
+                    keyValue("vedtaksperiodeId", packet["vedtaksperiodeId"].asText()),
+                    it
+                )
+            })
         } catch (err: Exception) {
             log.error(
                 "feil ved henting av infotrygd-data: ${err.message} for {}",
