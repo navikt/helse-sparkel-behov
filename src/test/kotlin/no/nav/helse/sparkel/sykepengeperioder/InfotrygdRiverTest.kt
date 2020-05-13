@@ -19,7 +19,7 @@ import org.junit.jupiter.api.TestInstance.Lifecycle
 import java.time.LocalDate
 
 @TestInstance(Lifecycle.PER_CLASS)
-internal class SykepengehistorikkløserTest {
+internal class InfotrygdRiverTest {
     private companion object {
         private val orgnummer = "80000000"
     }
@@ -68,7 +68,7 @@ internal class SykepengehistorikkløserTest {
 
     @Test
     internal fun `løser behov`() {
-        val behov = """{"@id": "behovsid", "@behov":["${Sykepengehistorikkløser.behov}"], "historikkFom": "2016-01-01", "historikkTom": "2020-01-01", "fødselsnummer": "fnr", "vedtaksperiodeId": "id" }"""
+        val behov = """{"@id": "behovsid", "@behov":["${InfotrygdRiver.behov}"], "historikkFom": "2016-01-01", "historikkTom": "2020-01-01", "fødselsnummer": "fnr", "vedtaksperiodeId": "id" }"""
 
         testBehov(behov)
 
@@ -79,7 +79,7 @@ internal class SykepengehistorikkløserTest {
 
     @Test
     internal fun `mapper også ut inntekt og dagsats`() {
-        val behov = """{"@id": "behovsid", "@behov":["${Sykepengehistorikkløser.behov}"], "historikkFom": "2016-01-01", "historikkTom": "2020-01-01", "fødselsnummer": "fnr", "vedtaksperiodeId": "id" }"""
+        val behov = """{"@id": "behovsid", "@behov":["${InfotrygdRiver.behov}"], "historikkFom": "2016-01-01", "historikkTom": "2020-01-01", "fødselsnummer": "fnr", "vedtaksperiodeId": "id" }"""
 
         testBehov(behov)
 
@@ -104,7 +104,7 @@ internal class SykepengehistorikkløserTest {
         )
     }
 
-    private fun JsonNode.løsning() = this.path("@løsning").path(Sykepengehistorikkløser.behov).map {
+    private fun JsonNode.løsning() = this.path("@løsning").path(InfotrygdRiver.behov).map {
         Utbetalingshistorikk(it)
     }
 
@@ -137,7 +137,7 @@ internal class SykepengehistorikkløserTest {
     }
 
     private fun testBehov(behov: String) {
-        Sykepengehistorikkløser(rapid, InfotrygdClient(
+        InfotrygdRiver(rapid, InfotrygdClient(
                 baseUrl = wireMockServer.baseUrl(),
                 accesstokenScope = "a_scope",
                 azureClient = AzureClient(

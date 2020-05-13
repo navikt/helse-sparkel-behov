@@ -1,5 +1,6 @@
 package no.nav.helse.sparkel.sykepengeperioder.infotrygd
 
+import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.node.ArrayNode
 import net.logstash.logback.argument.StructuredArguments.keyValue
@@ -22,14 +23,18 @@ class InfotrygdClient(
         private val tjenestekallLog = LoggerFactory.getLogger("tjenestekall")
     }
 
-    internal fun hentHistorikk(
+    internal fun <T> hentHistorikk(
         behovId: String,
         vedtaksperiodeId: String,
         fnr: String,
         fom: LocalDate,
-        tom: LocalDate
-    ): List<Utbetalingshistorikk> {
-        val url = "${baseUrl}/v1/hentSykepengerListe?fnr=$fnr&fraDato=${fom.format(DateTimeFormatter.ISO_DATE)}&tilDato=${tom.format(DateTimeFormatter.ISO_DATE)}"
+        tom: LocalDate,
+        mappingStrategy: (jsonNode: JsonNode) -> T
+    ): List<T> {
+        val url =
+            "${baseUrl}/v1/hentSykepengerListe?fnr=$fnr&fraDato=${fom.format(DateTimeFormatter.ISO_DATE)}&tilDato=${tom.format(
+                DateTimeFormatter.ISO_DATE
+            )}"
         val (responseCode, responseBody) = with(URL(url).openConnection() as HttpURLConnection) {
             requestMethod = "GET"
 
@@ -55,9 +60,7 @@ class InfotrygdClient(
         try {
             MDC.put("id", behovId)
             MDC.put("vedtaksperiodeId", vedtaksperiodeId)
-            return (jsonNode["sykmeldingsperioder"] as ArrayNode).map { periodeJson ->
-                Utbetalingshistorikk(periodeJson)
-            }
+            return (jsonNode["sykmeldingsperioder"] as ArrayNode).map { mappingStrategy(it) }
         } finally {
             MDC.remove("id")
             MDC.remove("vedtaksperiodeID")
@@ -65,3 +68,5 @@ class InfotrygdClient(
     }
 }
 
+fun JsonNode.utbetalingshistorikk() = Utbetalingshistorikk(this)
+fun JsonNode.infotrygdperioder() = Infotrygdperioder(this)
