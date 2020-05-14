@@ -23,15 +23,17 @@ internal fun createApp(env: Map<String, String>): RapidsConnection {
         accesstokenScope = env.getValue("INFOTRYGD_SCOPE"),
         azureClient = azureClient
     )
+    val infotrygdService = InfotrygdService(infotrygdClient)
 
     return RapidApplication.create(env).apply {
-        InfotrygdRiver(this, infotrygdClient)
+        Sykepengehistorikkløser(this, infotrygdService)
+        Utbetalingsperiodeløser(this, infotrygdService)
     }
 }
 
 private fun String.readFile() =
-        try {
-            File(this).readText(Charsets.UTF_8)
-        } catch (err: FileNotFoundException) {
-            null
-        }
+    try {
+        File(this).readText(Charsets.UTF_8)
+    } catch (err: FileNotFoundException) {
+        null
+    }

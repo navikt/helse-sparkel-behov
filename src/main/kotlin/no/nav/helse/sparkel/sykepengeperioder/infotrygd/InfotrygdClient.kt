@@ -69,4 +69,4 @@ class InfotrygdClient(
 }
 
 fun JsonNode.utbetalingshistorikk() = Utbetalingshistorikk(this)
-fun JsonNode.infotrygdperioder() = Infotrygdperioder(this)
+fun JsonNode.infotrygdperioder() = Utbetalingsperioder(this)

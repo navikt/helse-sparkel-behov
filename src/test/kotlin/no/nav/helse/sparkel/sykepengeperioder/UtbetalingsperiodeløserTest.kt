@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.github.tomakehurst.wiremock.WireMockServer
-import com.github.tomakehurst.wiremock.client.WireMock.*
+import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration
 import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.sparkel.sykepengeperioder.infotrygd.AzureClient
@@ -15,21 +15,22 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
-import org.junit.jupiter.api.TestInstance.Lifecycle
 import java.time.LocalDate
 
-@TestInstance(Lifecycle.PER_CLASS)
-internal class InfotrygdRiverTest {
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
+internal class UtbetalingsperiodeløserTest {
+
     private companion object {
-        private val orgnummer = "80000000"
+        private const val orgnummer = "80000000"
     }
 
     private val wireMockServer: WireMockServer = WireMockServer(WireMockConfiguration.options().dynamicPort())
     private val objectMapper = jacksonObjectMapper()
-            .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
-            .registerModule(JavaTimeModule())
+        .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
+        .registerModule(JavaTimeModule())
 
     private lateinit var sendtMelding: JsonNode
+    private lateinit var service: InfotrygdService
 
     private val context = object : RapidsConnection.MessageContext {
         override fun send(message: String) {
@@ -57,8 +58,19 @@ internal class InfotrygdRiverTest {
     @BeforeAll
     fun setup() {
         wireMockServer.start()
-        configureFor(create().port(wireMockServer.port()).build())
+        WireMock.configureFor(WireMock.create().port(wireMockServer.port()).build())
         stubEksterneEndepunkt()
+        service = InfotrygdService(
+            InfotrygdClient(
+                baseUrl = wireMockServer.baseUrl(),
+                accesstokenScope = "a_scope",
+                azureClient = AzureClient(
+                    tenantUrl = "${wireMockServer.baseUrl()}/AZURE_TENANT_ID",
+                    clientId = "client_id",
+                    clientSecret = "client_secret"
+                )
+            )
+        )
     }
 
     @AfterAll
@@ -67,8 +79,9 @@ internal class InfotrygdRiverTest {
     }
 
     @Test
-    internal fun `løser behov`() {
-        val behov = """{"@id": "behovsid", "@behov":["${InfotrygdRiver.behov}"], "historikkFom": "2016-01-01", "historikkTom": "2020-01-01", "fødselsnummer": "fnr", "vedtaksperiodeId": "id" }"""
+    fun `løser behov`() {
+        val behov =
+            """{"@id": "behovsid", "@behov":["${Utbetalingsperiodeløser.behov}"], "historikkFom": "2016-01-01", "historikkTom": "2020-01-01", "fødselsnummer": "fnr", "vedtaksperiodeId": "id" }"""
 
         testBehov(behov)
 
@@ -78,119 +91,92 @@ internal class InfotrygdRiverTest {
     }
 
     @Test
-    internal fun `mapper også ut inntekt og dagsats`() {
-        val behov = """{"@id": "behovsid", "@behov":["${InfotrygdRiver.behov}"], "historikkFom": "2016-01-01", "historikkTom": "2020-01-01", "fødselsnummer": "fnr", "vedtaksperiodeId": "id" }"""
+    fun `mapper også ut perioder`() {
+        val behov =
+            """{"@id": "behovsid", "@behov":["${Utbetalingsperiodeløser.behov}"], "historikkFom": "2016-01-01", "historikkTom": "2020-01-01", "fødselsnummer": "fnr", "vedtaksperiodeId": "id" }"""
 
         testBehov(behov)
 
-        val perioder = sendtMelding.løsning()
+        val løsninger = sendtMelding.løsning()
+        assertEquals(1, løsninger.size)
 
-        assertEquals(1, perioder.size)
+        val periode = løsninger.first()
 
-        assertSykeperiode(
-                sykeperiode = perioder[0].utbetalteSykeperioder[0],
-                fom = 19.januar,
-                tom = 23.januar,
-                grad = "100",
-                orgnummer = orgnummer,
-                dagsats = 870.0
-        )
-
-        assertInntektsopplysninger(
-                inntektsopplysninger = perioder[0].inntektsopplysninger,
-                dato = 19.januar,
-                inntektPerMåned = 18852,
-                orgnummer = orgnummer
+        assertInfotrygdperiode(
+            periode = periode,
+            fom = 19.januar,
+            tom = 23.januar,
+            grad = "100",
+            dagsats = 870.0,
+            typetekst = "ArbRef",
+            organisasjonsnummer = orgnummer
         )
     }
 
-    private fun JsonNode.løsning() = this.path("@løsning").path(InfotrygdRiver.behov).map {
-        Utbetalingshistorikk(it)
+    private fun JsonNode.løsning() = this.path("@løsning").path(Utbetalingsperiodeløser.behov).map {
+        Infotrygdperiode(it)
     }
 
-    private class Utbetalingshistorikk(json: JsonNode) {
-
-        val utbetalteSykeperioder = json["utbetalteSykeperioder"].map {
-            UtbetalteSykeperiode(it)
-        }
-        val inntektsopplysninger = json["inntektsopplysninger"].map {
-            Inntektsopplysning(it)
-        }
-
-        class UtbetalteSykeperiode(json: JsonNode) {
-            val fom = json["fom"].asLocalDate()
-            val tom = json["tom"].asLocalDate()
-            val utbetalingsGrad = json["utbetalingsGrad"].asText()
-            val orgnummer = json["orgnummer"].asText()
-            val dagsats = json["dagsats"].asDouble()
-        }
-
-        class Inntektsopplysning(json: JsonNode) {
-            val sykepengerFom = json["sykepengerFom"].asLocalDate()
-            val inntekt = json["inntekt"].asInt()
-            val orgnummer = json["orgnummer"].asText()
-        }
+    class Infotrygdperiode(json: JsonNode) {
+        val fom = json["fom"].asLocalDate()
+        val tom = json["tom"].asLocalDate()
+        val grad = json["grad"].asText()
+        val dagsats = json["dagsats"].asDouble()
+        val typetekst = json["typetekst"].asText()
+        val organisasjonsnummer = json["organisasjonsnummer"].asText()
 
         private companion object {
             fun JsonNode.asLocalDate() = LocalDate.parse(this.asText())
         }
     }
 
+
     private fun testBehov(behov: String) {
-        InfotrygdRiver(rapid, InfotrygdClient(
-                baseUrl = wireMockServer.baseUrl(),
-                accesstokenScope = "a_scope",
-                azureClient = AzureClient(
-                        tenantUrl = "${wireMockServer.baseUrl()}/AZURE_TENANT_ID",
-                        clientId = "client_id",
-                        clientSecret = "client_secret"
-                )
-        ))
+        Utbetalingsperiodeløser(rapid, service)
         rapid.sendTestMessage(behov)
     }
 
-    private fun assertSykeperiode(
-            sykeperiode: Utbetalingshistorikk.UtbetalteSykeperiode,
-            fom: LocalDate,
-            tom: LocalDate,
-            grad: String,
-            orgnummer: String,
-            dagsats: Double
+    private fun assertInfotrygdperiode(
+        periode: Infotrygdperiode,
+        fom: LocalDate,
+        tom: LocalDate, grad: String,
+        dagsats: Double,
+        typetekst: String,
+        organisasjonsnummer: String
     ) {
-        assertEquals(fom, sykeperiode.fom)
-        assertEquals(tom, sykeperiode.tom)
-        assertEquals(grad, sykeperiode.utbetalingsGrad)
-        assertEquals(orgnummer, sykeperiode.orgnummer)
-        assertEquals(dagsats, sykeperiode.dagsats)
-    }
-
-    private fun assertInntektsopplysninger(
-            inntektsopplysninger: List<Utbetalingshistorikk.Inntektsopplysning>,
-            dato: LocalDate,
-            inntektPerMåned: Int,
-            orgnummer: String
-    ) {
-        assertEquals(dato, inntektsopplysninger[0].sykepengerFom)
-        assertEquals(inntektPerMåned, inntektsopplysninger[0].inntekt)
-        assertEquals(orgnummer, inntektsopplysninger[0].orgnummer)
+        assertEquals(fom, periode.fom)
+        assertEquals(tom, periode.tom)
+        assertEquals(grad, periode.grad)
+        assertEquals(dagsats, periode.dagsats)
+        assertEquals(typetekst, periode.typetekst)
+        assertEquals(organisasjonsnummer, periode.organisasjonsnummer)
     }
 
     private fun stubEksterneEndepunkt() {
-        stubFor(post(urlMatching("/AZURE_TENANT_ID/oauth2/v2.0/token"))
-                .willReturn(aResponse()
+        WireMock.stubFor(
+            WireMock.post(WireMock.urlMatching("/AZURE_TENANT_ID/oauth2/v2.0/token"))
+                .willReturn(
+                    WireMock.aResponse()
                         .withStatus(200)
                         .withHeader("Content-Type", "application/json")
-                        .withBody("""{
+                        .withBody(
+                            """{
                         "token_type": "Bearer",
                         "expires_in": 3599,
                         "access_token": "1234abc"
-                    }""")))
-        stubFor(get(urlPathEqualTo("/v1/hentSykepengerListe"))
-                .withHeader("Accept", equalTo("application/json"))
-                .willReturn(aResponse()
+                    }"""
+                        )
+                )
+        )
+        WireMock.stubFor(
+            WireMock.get(WireMock.urlPathEqualTo("/v1/hentSykepengerListe"))
+                .withHeader("Accept", WireMock.equalTo("application/json"))
+                .willReturn(
+                    WireMock.aResponse()
                         .withStatus(200)
                         .withHeader("Content-Type", "application/json")
-                        .withBody("""{
+                        .withBody(
+                            """{
                                       "sykmeldingsperioder": [
                                         {
                                           "ident": 1000,
@@ -222,7 +208,7 @@ internal class InfotrygdRiverTest {
                                               "dagsats": 870.0,
                                               "typeKode": "5",
                                               "typeTekst": "ArbRef",
-                                              "arbOrgnr": 80000000
+                                              "arbOrgnr": $orgnummer
                                             }
                                           ],
                                           "inntektList": [
@@ -246,6 +232,9 @@ internal class InfotrygdRiverTest {
                                           "forsikring": []
                                         }
                                       ]
-                                    }""")))
+                                    }"""
+                        )
+                )
+        )
     }
 }
