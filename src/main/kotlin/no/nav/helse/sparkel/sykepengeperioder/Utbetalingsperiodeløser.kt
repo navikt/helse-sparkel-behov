@@ -14,7 +14,7 @@ internal class Utbetalingsperiodeløser(
     private val sikkerlogg = LoggerFactory.getLogger("tjenestekall")
 
     companion object {
-        const val behov = "UtbetalingsperioderFraInfotrygd"
+        const val behov = "HentInfotrygdutbetalinger"
     }
 
     init {
