@@ -6,6 +6,7 @@ import no.nav.helse.rapids_rivers.JsonMessage
 import no.nav.helse.rapids_rivers.asLocalDate
 import no.nav.helse.sparkel.sykepengeperioder.infotrygd.InfotrygdClient
 import org.slf4j.LoggerFactory
+import java.time.LocalDate
 
 internal class InfotrygdService(private val infotrygdClient: InfotrygdClient) {
 
@@ -13,39 +14,40 @@ internal class InfotrygdService(private val infotrygdClient: InfotrygdClient) {
     private val log = LoggerFactory.getLogger(this::class.java)
 
     fun løsningForBehov(
-        packet: JsonMessage,
-        behov: String,
-        løsningMapperStrategy: (jsonNode: JsonNode) -> Any
-    ): Map<String, List<Any>>? {
+        behovId: String,
+        vedtaksperiodeId: String,
+        fødselsnummer: String,
+        fom: LocalDate,
+        tom: LocalDate
+    ): JsonNode? {
         try {
             val historikk = infotrygdClient.hentHistorikk(
-                behovId = packet["@id"].asText(),
-                vedtaksperiodeId = packet["vedtaksperiodeId"].asText(),
-                fnr = packet["fødselsnummer"].asText(),
-                fom = packet["historikkFom"].asLocalDate(),
-                tom = packet["historikkTom"].asLocalDate(),
-                mappingStrategy = løsningMapperStrategy
+                behovId = behovId,
+                vedtaksperiodeId = vedtaksperiodeId,
+                fnr = fødselsnummer,
+                fom = fom,
+                tom = tom
             )
             log.info(
                 "løser behov: {} for {}",
-                StructuredArguments.keyValue("id", packet["@id"].asText()),
-                StructuredArguments.keyValue("vedtaksperiodeId", packet["vedtaksperiodeId"].asText())
+                StructuredArguments.keyValue("id", behovId),
+                StructuredArguments.keyValue("vedtaksperiodeId", vedtaksperiodeId)
             )
             sikkerlogg.info(
                 "løser behov: {} for {}",
-                StructuredArguments.keyValue("id", packet["@id"].asText()),
-                StructuredArguments.keyValue("vedtaksperiodeId", packet["vedtaksperiodeId"].asText())
+                StructuredArguments.keyValue("id", behovId),
+                StructuredArguments.keyValue("vedtaksperiodeId", vedtaksperiodeId)
             )
-            return mapOf(behov to historikk)
+            return historikk
         } catch (err: Exception) {
             log.error(
                 "feil ved henting av infotrygd-data: ${err.message} for {}",
-                StructuredArguments.keyValue("vedtaksperiodeId", packet["vedtaksperiodeId"].asText()),
+                StructuredArguments.keyValue("vedtaksperiodeId", vedtaksperiodeId),
                 err
             )
             sikkerlogg.error(
                 "feil ved henting av infotrygd-data: ${err.message} for {}",
-                StructuredArguments.keyValue("vedtaksperiodeId", packet["vedtaksperiodeId"].asText()),
+                StructuredArguments.keyValue("vedtaksperiodeId", vedtaksperiodeId),
                 err
             )
             return null

@@ -23,14 +23,13 @@ class InfotrygdClient(
         private val tjenestekallLog = LoggerFactory.getLogger("tjenestekall")
     }
 
-    internal fun <T> hentHistorikk(
+    internal fun hentHistorikk(
         behovId: String,
         vedtaksperiodeId: String,
         fnr: String,
         fom: LocalDate,
-        tom: LocalDate,
-        mappingStrategy: (jsonNode: JsonNode) -> T
-    ): List<T> {
+        tom: LocalDate
+    ): ArrayNode {
         val url =
             "${baseUrl}/v1/hentSykepengerListe?fnr=$fnr&fraDato=${fom.format(DateTimeFormatter.ISO_DATE)}&tilDato=${tom.format(
                 DateTimeFormatter.ISO_DATE
@@ -60,13 +59,10 @@ class InfotrygdClient(
         try {
             MDC.put("id", behovId)
             MDC.put("vedtaksperiodeId", vedtaksperiodeId)
-            return (jsonNode["sykmeldingsperioder"] as ArrayNode).map { mappingStrategy(it) }
+            return jsonNode["sykmeldingsperioder"] as ArrayNode
         } finally {
             MDC.remove("id")
             MDC.remove("vedtaksperiodeID")
         }
     }
 }
-
-fun JsonNode.utbetalingshistorikk() = Utbetalingshistorikk(this)
-fun JsonNode.infotrygdperioder() = Utbetalingsperioder(this)

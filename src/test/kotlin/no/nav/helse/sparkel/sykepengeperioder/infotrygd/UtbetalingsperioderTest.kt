@@ -62,5 +62,4 @@ internal class UtbetalingsperioderTest {
 
     private fun readJson(fileName: String) =
         objectMapper.readTree(this::class.java.getResource("/$fileName").readText())
-
 }

@@ -35,8 +35,16 @@ internal class Sykepengehistorikkløser(
 
     override fun onPacket(packet: JsonMessage, context: RapidsConnection.MessageContext) {
         sikkerlogg.info("mottok melding: ${packet.toJson()}")
-        infotrygdService.løsningForBehov(packet, behov, JsonNode::toUtbetalingshistorikk)?.let { løsning ->
-            packet["@løsning"] = løsning
+        infotrygdService.løsningForBehov(
+            packet["@id"].asText(),
+            packet["vedtaksperiodeId"].asText(),
+            packet["fødselsnummer"].asText(),
+            packet["historikkFom"].asLocalDate(),
+            packet["historikkTom"].asLocalDate()
+        )?.let { løsning ->
+            packet["@løsning"] = mapOf(
+                behov to løsning.map { Utbetalingshistorikk(it) }
+            )
             context.send(packet.toJson().also { json ->
                 sikkerlogg.info(
                     "sender svar {} for {}:\n\t{}",
@@ -47,7 +55,4 @@ internal class Sykepengehistorikkløser(
             })
         }
     }
-
 }
-
-private fun JsonNode.toUtbetalingshistorikk() = Utbetalingshistorikk(this)

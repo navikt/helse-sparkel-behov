@@ -24,8 +24,8 @@ internal class Utbetalingsperiodeløser(
             validate { it.requireKey("@id") }
             validate { it.requireKey("fødselsnummer") }
             validate { it.requireKey("vedtaksperiodeId") }
-            validate { it.require("historikkFom", JsonNode::asLocalDate) }
-            validate { it.require("historikkTom", JsonNode::asLocalDate) }
+            validate { it.require("$behov.historikkFom", JsonNode::asLocalDate) }
+            validate { it.require("$behov.historikkTom", JsonNode::asLocalDate) }
         }.register(this)
     }
 
@@ -35,9 +35,15 @@ internal class Utbetalingsperiodeløser(
 
     override fun onPacket(packet: JsonMessage, context: RapidsConnection.MessageContext) {
         sikkerlogg.info("mottok melding: ${packet.toJson()}")
-        infotrygdService.løsningForBehov(packet, behov, JsonNode::toUtbetalingsperioder)?.let { løsning ->
+        infotrygdService.løsningForBehov(
+            packet["@id"].asText(),
+            packet["vedtaksperiodeId"].asText(),
+            packet["fødselsnummer"].asText(),
+            packet["$behov.historikkFom"].asLocalDate(),
+            packet["$behov.historikkTom"].asLocalDate()
+        )?.let { løsning ->
             packet["@løsning"] = mapOf(
-                behov to løsning.getValue(behov).flatMap { (it as Utbetalingsperioder).perioder }
+                behov to løsning.flatMap { Utbetalingsperioder(it).perioder }
             )
             context.send(packet.toJson().also { json ->
                 sikkerlogg.info(
@@ -49,7 +55,4 @@ internal class Utbetalingsperiodeløser(
             })
         }
     }
-
 }
-
-private fun JsonNode.toUtbetalingsperioder() = Utbetalingsperioder(this)

@@ -79,11 +79,8 @@ internal class UtbetalingsperiodeløserTest {
     }
 
     @Test
-    fun `løser behov`() {
-        val behov =
-            """{"@id": "behovsid", "@behov":["${Utbetalingsperiodeløser.behov}"], "historikkFom": "2016-01-01", "historikkTom": "2020-01-01", "fødselsnummer": "fnr", "vedtaksperiodeId": "id" }"""
-
-        testBehov(behov)
+    fun `løser enkelt behov`() {
+        testBehov(enkeltBehov())
 
         val perioder = sendtMelding.løsning()
 
@@ -91,11 +88,18 @@ internal class UtbetalingsperiodeløserTest {
     }
 
     @Test
-    fun `mapper også ut perioder`() {
-        val behov =
-            """{"@id": "behovsid", "@behov":["${Utbetalingsperiodeløser.behov}"], "historikkFom": "2016-01-01", "historikkTom": "2020-01-01", "fødselsnummer": "fnr", "vedtaksperiodeId": "id" }"""
+    fun `løser behov med flere behov-nøkler`() {
+        testBehov(behovMedFlereBehovsnøkler())
 
-        testBehov(behov)
+        val perioder = sendtMelding.løsning()
+        println(sendtMelding.toPrettyString())
+
+        assertEquals(1, perioder.size)
+    }
+
+    @Test
+    fun `mapper også ut perioder`() {
+        testBehov(enkeltBehov())
 
         val løsninger = sendtMelding.løsning()
         assertEquals(1, løsninger.size)
@@ -130,7 +134,6 @@ internal class UtbetalingsperiodeløserTest {
         }
     }
 
-
     private fun testBehov(behov: String) {
         Utbetalingsperiodeløser(rapid, service)
         rapid.sendTestMessage(behov)
@@ -151,6 +154,42 @@ internal class UtbetalingsperiodeløserTest {
         assertEquals(typetekst, periode.typetekst)
         assertEquals(organisasjonsnummer, periode.organisasjonsnummer)
     }
+
+    private fun behovMedFlereBehovsnøkler() =
+        """
+        {
+            "@event_name" : "behov",
+            "@behov" : [ "HentEnhet", "HentPersoninfo", "HentInfotrygdutbetalinger" ],
+            "@id" : "id",
+            "@opprettet" : "2020-05-18",
+            "spleisBehovId" : "spleisBehovId",
+            "vedtaksperiodeId" : "vedtaksperiodeId",
+            "fødselsnummer" : "fnr",
+            "orgnummer" : "orgnr",
+            "HentInfotrygdutbetalinger" : {
+                "historikkFom" : "2017-05-18",
+                "historikkTom" : "2020-05-18"
+            }
+        }
+        """.trimIndent()
+
+    private fun enkeltBehov() =
+        """
+        {
+            "@event_name" : "behov",
+            "@behov" : [ "HentInfotrygdutbetalinger" ],
+            "@id" : "id",
+            "@opprettet" : "2020-05-18",
+            "spleisBehovId" : "spleisBehovId",
+            "vedtaksperiodeId" : "vedtaksperiodeId",
+            "fødselsnummer" : "fnr",
+            "orgnummer" : "orgnr",
+            "HentInfotrygdutbetalinger" : {
+                "historikkFom" : "2017-05-18",
+                "historikkTom" : "2020-05-18"
+            }
+        }
+        """.trimIndent()
 
     private fun stubEksterneEndepunkt() {
         WireMock.stubFor(
