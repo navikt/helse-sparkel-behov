@@ -10,11 +10,10 @@ import com.github.tomakehurst.wiremock.core.WireMockConfiguration
 import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.sparkel.sykepengeperioder.infotrygd.AzureClient
 import no.nav.helse.sparkel.sykepengeperioder.infotrygd.InfotrygdClient
-import org.junit.jupiter.api.AfterAll
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.BeforeAll
-import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.TestInstance
+import org.codehaus.jackson.node.NullNode
+import org.junit.jupiter.api.*
+import org.junit.jupiter.api.Assertions.*
+import java.lang.Exception
 import java.time.LocalDate
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -29,7 +28,7 @@ internal class UtbetalingsperiodeløserTest {
         .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
         .registerModule(JavaTimeModule())
 
-    private lateinit var sendtMelding: JsonNode
+    private var sendtMelding: JsonNode = objectMapper.createObjectNode()
     private lateinit var service: InfotrygdService
 
     private val context = object : RapidsConnection.MessageContext {
@@ -78,30 +77,66 @@ internal class UtbetalingsperiodeløserTest {
         wireMockServer.stop()
     }
 
-    @Test
-    fun `løser enkelt behov`() {
-        testBehov(enkeltBehov())
+    @BeforeEach
+    internal fun beforeEach() {
+        sendtMelding = objectMapper.createObjectNode()
+    }
 
-        val perioder = sendtMelding.løsning()
+    @Test
+    fun `løser enkelt behov V1`() {
+        testBehovV1(enkeltBehovV1())
+
+        val perioder = sendtMelding.løsningV1()
 
         assertEquals(1, perioder.size)
     }
 
     @Test
-    fun `løser behov med flere behov-nøkler`() {
-        testBehov(behovMedFlereBehovsnøkler())
+    fun `løser enkelt behov V2`() {
+        testBehovV2(enkeltBehovV2())
 
-        val perioder = sendtMelding.løsning()
+        val perioder = sendtMelding.løsningV2()
+
+        assertEquals(1, perioder.size)
+    }
+
+    @Test
+    fun `løser behovV1 med flere behov-nøkler`() {
+        testBehovV1(behovMedFlereBehovsnøklerV1())
+
+        val perioder = sendtMelding.løsningV1()
         println(sendtMelding.toPrettyString())
 
         assertEquals(1, perioder.size)
     }
 
     @Test
-    fun `mapper også ut perioder`() {
-        testBehov(enkeltBehov())
+    fun `løser behovV2 med flere behov-nøkler`() {
+        testBehovV2(behovMedFlereBehovsnøklerV2())
 
-        val løsninger = sendtMelding.løsning()
+        val perioder = sendtMelding.løsningV2()
+        println(sendtMelding.toPrettyString())
+
+        assertEquals(1, perioder.size)
+    }
+
+    @Test
+    fun `River V2 svarer ikke på V1 behov`() {
+        testBehovV2(behovMedFlereBehovsnøklerV1())
+        assertTrue(sendtMelding.isEmpty)
+    }
+
+    @Test
+    fun `River V1 svarer ikke på V2 behov`() {
+        testBehovV1(behovMedFlereBehovsnøklerV2())
+        assertTrue(sendtMelding.isEmpty)
+    }
+
+    @Test
+    fun `mapper også ut perioder`() {
+        testBehovV1(enkeltBehovV1())
+
+        val løsninger = sendtMelding.løsningV1()
         assertEquals(1, løsninger.size)
 
         val periode = løsninger.first()
@@ -117,7 +152,11 @@ internal class UtbetalingsperiodeløserTest {
         )
     }
 
-    private fun JsonNode.løsning() = this.path("@løsning").path(Utbetalingsperiodeløser.behov).map {
+    private fun JsonNode.løsningV1() = this.path("@løsning").path(UtbetalingsperiodeløserV1.behov).map {
+        Infotrygdperiode(it)
+    }
+
+    private fun JsonNode.løsningV2() = this.path("@løsning").path(UtbetalingsperiodeløserV2.behov).map {
         Infotrygdperiode(it)
     }
 
@@ -134,8 +173,13 @@ internal class UtbetalingsperiodeløserTest {
         }
     }
 
-    private fun testBehov(behov: String) {
-        Utbetalingsperiodeløser(rapid, service)
+    private fun testBehovV1(behov: String) {
+        UtbetalingsperiodeløserV1(rapid, service)
+        rapid.sendTestMessage(behov)
+    }
+
+    private fun testBehovV2(behov: String) {
+        UtbetalingsperiodeløserV2(rapid, service)
         rapid.sendTestMessage(behov)
     }
 
@@ -155,7 +199,7 @@ internal class UtbetalingsperiodeløserTest {
         assertEquals(organisasjonsnummer, periode.organisasjonsnummer)
     }
 
-    private fun behovMedFlereBehovsnøkler() =
+    private fun behovMedFlereBehovsnøklerV1() =
         """
         {
             "@event_name" : "behov",
@@ -166,14 +210,30 @@ internal class UtbetalingsperiodeløserTest {
             "vedtaksperiodeId" : "vedtaksperiodeId",
             "fødselsnummer" : "fnr",
             "orgnummer" : "orgnr",
-            "HentInfotrygdutbetalinger" : {
+            "HentInfotrygdutbetalinger.historikkFom" : "2017-05-18",
+            "HentInfotrygdutbetalinger.historikkTom" : "2020-05-18"
+        }
+        """.trimIndent()
+
+    private fun behovMedFlereBehovsnøklerV2() =
+        """
+        {
+            "@event_name" : "behov",
+            "@behov" : [ "HentEnhet", "HentPersoninfo", "HentInfotrygdutbetalinger" ],
+            "@id" : "id",
+            "@opprettet" : "2020-05-18",
+            "spleisBehovId" : "spleisBehovId",
+            "vedtaksperiodeId" : "vedtaksperiodeId",
+            "fødselsnummer" : "fnr",
+            "orgnummer" : "orgnr",
+            "HentInfotrygdutbetalinger": {
                 "historikkFom" : "2017-05-18",
                 "historikkTom" : "2020-05-18"
             }
         }
         """.trimIndent()
 
-    private fun enkeltBehov() =
+    private fun enkeltBehovV1() =
         """
         {
             "@event_name" : "behov",
@@ -184,7 +244,23 @@ internal class UtbetalingsperiodeløserTest {
             "vedtaksperiodeId" : "vedtaksperiodeId",
             "fødselsnummer" : "fnr",
             "orgnummer" : "orgnr",
-            "HentInfotrygdutbetalinger" : {
+            "HentInfotrygdutbetalinger.historikkFom" : "2017-05-18",
+            "HentInfotrygdutbetalinger.historikkTom" : "2020-05-18"
+        }
+        """.trimIndent()
+
+    private fun enkeltBehovV2() =
+        """
+        {
+            "@event_name" : "behov",
+            "@behov" : [ "HentInfotrygdutbetalinger" ],
+            "@id" : "id",
+            "@opprettet" : "2020-05-18",
+            "spleisBehovId" : "spleisBehovId",
+            "vedtaksperiodeId" : "vedtaksperiodeId",
+            "fødselsnummer" : "fnr",
+            "orgnummer" : "orgnr",
+            "HentInfotrygdutbetalinger": {
                 "historikkFom" : "2017-05-18",
                 "historikkTom" : "2020-05-18"
             }
