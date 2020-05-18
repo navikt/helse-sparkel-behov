@@ -8,12 +8,11 @@ import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration
 import no.nav.helse.rapids_rivers.RapidsConnection
+import no.nav.helse.rapids_rivers.asLocalDate
 import no.nav.helse.sparkel.sykepengeperioder.infotrygd.AzureClient
 import no.nav.helse.sparkel.sykepengeperioder.infotrygd.InfotrygdClient
-import org.codehaus.jackson.node.NullNode
 import org.junit.jupiter.api.*
 import org.junit.jupiter.api.Assertions.*
-import java.lang.Exception
 import java.time.LocalDate
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -84,27 +83,27 @@ internal class UtbetalingsperiodeløserTest {
 
     @Test
     fun `løser enkelt behov V1`() {
-        testBehovV1(enkeltBehovV1())
+        testBehov(enkeltBehovV1())
 
-        val perioder = sendtMelding.løsningV1()
+        val perioder = sendtMelding.løsning()
 
         assertEquals(1, perioder.size)
     }
 
     @Test
     fun `løser enkelt behov V2`() {
-        testBehovV2(enkeltBehovV2())
+        testBehov(enkeltBehovV2())
 
-        val perioder = sendtMelding.løsningV2()
+        val perioder = sendtMelding.løsning()
 
         assertEquals(1, perioder.size)
     }
 
     @Test
     fun `løser behovV1 med flere behov-nøkler`() {
-        testBehovV1(behovMedFlereBehovsnøklerV1())
+        testBehov(behovMedFlereBehovsnøklerV1())
 
-        val perioder = sendtMelding.løsningV1()
+        val perioder = sendtMelding.løsning()
         println(sendtMelding.toPrettyString())
 
         assertEquals(1, perioder.size)
@@ -112,31 +111,31 @@ internal class UtbetalingsperiodeløserTest {
 
     @Test
     fun `løser behovV2 med flere behov-nøkler`() {
-        testBehovV2(behovMedFlereBehovsnøklerV2())
+        testBehov(behovMedFlereBehovsnøklerV2())
 
-        val perioder = sendtMelding.løsningV2()
+        val perioder = sendtMelding.løsning()
         println(sendtMelding.toPrettyString())
 
         assertEquals(1, perioder.size)
     }
 
     @Test
-    fun `River V2 svarer ikke på V1 behov`() {
-        testBehovV2(behovMedFlereBehovsnøklerV1())
-        assertTrue(sendtMelding.isEmpty)
+    fun `River svarer på V1 behov`() {
+        testBehov(behovMedFlereBehovsnøklerV1())
+        assertFalse(sendtMelding.isEmpty)
     }
 
     @Test
-    fun `River V1 svarer ikke på V2 behov`() {
-        testBehovV1(behovMedFlereBehovsnøklerV2())
-        assertTrue(sendtMelding.isEmpty)
+    fun `River svarer på V2 behov`() {
+        testBehov(behovMedFlereBehovsnøklerV2())
+        assertFalse(sendtMelding.isEmpty)
     }
 
     @Test
     fun `mapper også ut perioder`() {
-        testBehovV1(enkeltBehovV1())
+        testBehov(enkeltBehovV1())
 
-        val løsninger = sendtMelding.løsningV1()
+        val løsninger = sendtMelding.løsning()
         assertEquals(1, løsninger.size)
 
         val periode = løsninger.first()
@@ -152,11 +151,7 @@ internal class UtbetalingsperiodeløserTest {
         )
     }
 
-    private fun JsonNode.løsningV1() = this.path("@løsning").path(UtbetalingsperiodeløserV1.behov).map {
-        Infotrygdperiode(it)
-    }
-
-    private fun JsonNode.løsningV2() = this.path("@løsning").path(UtbetalingsperiodeløserV2.behov).map {
+    private fun JsonNode.løsning() = this.path("@løsning").path(Utbetalingsperiodeløser.behov).map {
         Infotrygdperiode(it)
     }
 
@@ -173,13 +168,8 @@ internal class UtbetalingsperiodeløserTest {
         }
     }
 
-    private fun testBehovV1(behov: String) {
-        UtbetalingsperiodeløserV1(rapid, service)
-        rapid.sendTestMessage(behov)
-    }
-
-    private fun testBehovV2(behov: String) {
-        UtbetalingsperiodeløserV2(rapid, service)
+    private fun testBehov(behov: String) {
+        Utbetalingsperiodeløser(rapid, service)
         rapid.sendTestMessage(behov)
     }
 

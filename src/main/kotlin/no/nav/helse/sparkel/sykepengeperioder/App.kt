@@ -27,8 +27,7 @@ internal fun createApp(env: Map<String, String>): RapidsConnection {
 
     return RapidApplication.create(env).apply {
         Sykepengehistorikkløser(this, infotrygdService)
-        UtbetalingsperiodeløserV1(this, infotrygdService)
-        UtbetalingsperiodeløserV2(this, infotrygdService)
+        Utbetalingsperiodeløser(this, infotrygdService)
     }
 }
 
