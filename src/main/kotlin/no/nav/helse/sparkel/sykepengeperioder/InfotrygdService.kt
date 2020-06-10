@@ -2,6 +2,7 @@ package no.nav.helse.sparkel.sykepengeperioder
 
 import com.fasterxml.jackson.databind.JsonNode
 import net.logstash.logback.argument.StructuredArguments
+import net.logstash.logback.argument.StructuredArguments.keyValue
 import no.nav.helse.rapids_rivers.JsonMessage
 import no.nav.helse.rapids_rivers.asLocalDate
 import no.nav.helse.sparkel.sykepengeperioder.infotrygd.InfotrygdClient
@@ -30,24 +31,24 @@ internal class InfotrygdService(private val infotrygdClient: InfotrygdClient) {
             )
             log.info(
                 "løser behov: {} for {}",
-                StructuredArguments.keyValue("id", behovId),
-                StructuredArguments.keyValue("vedtaksperiodeId", vedtaksperiodeId)
+                keyValue("id", behovId),
+                keyValue("vedtaksperiodeId", vedtaksperiodeId)
             )
             sikkerlogg.info(
                 "løser behov: {} for {}",
-                StructuredArguments.keyValue("id", behovId),
-                StructuredArguments.keyValue("vedtaksperiodeId", vedtaksperiodeId)
+                keyValue("id", behovId),
+                keyValue("vedtaksperiodeId", vedtaksperiodeId)
             )
             return historikk
         } catch (err: Exception) {
-            log.error(
+            log.warn(
                 "feil ved henting av infotrygd-data: ${err.message} for {}",
-                StructuredArguments.keyValue("vedtaksperiodeId", vedtaksperiodeId),
+                keyValue("vedtaksperiodeId", vedtaksperiodeId),
                 err
             )
-            sikkerlogg.error(
+            sikkerlogg.warn(
                 "feil ved henting av infotrygd-data: ${err.message} for {}",
-                StructuredArguments.keyValue("vedtaksperiodeId", vedtaksperiodeId),
+                keyValue("vedtaksperiodeId", vedtaksperiodeId),
                 err
             )
             return null

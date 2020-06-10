@@ -29,7 +29,8 @@ class AzureClient(private val tenantUrl: String, private val clientId: String, p
     private fun fetchToken(scope: String): Token {
         val (responseCode, responseBody) = with(URL("$tenantUrl/oauth2/v2.0/token").openConnection() as HttpURLConnection) {
             requestMethod = "POST"
-
+            connectTimeout = 10000
+            readTimeout = 10000
             doOutput = true
             outputStream.use {
                 it.bufferedWriter().apply {

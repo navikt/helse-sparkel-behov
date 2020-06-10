@@ -36,7 +36,8 @@ class InfotrygdClient(
             )}"
         val (responseCode, responseBody) = with(URL(url).openConnection() as HttpURLConnection) {
             requestMethod = "GET"
-
+            connectTimeout = 10000
+            readTimeout = 10000
             setRequestProperty("Authorization", "Bearer ${azureClient.getToken(accesstokenScope).accessToken}")
             setRequestProperty("Accept", "application/json")
 
