@@ -2,7 +2,7 @@ apiVersion: nais.io/v1alpha1
 kind: Application
 metadata:
   name: {{app}}
-  namespace: default
+  namespace: tbd
   labels:
     team: {{team}}
 spec:
@@ -35,7 +35,7 @@ spec:
     enabled: true
     paths:
       - mountPath: /var/run/secrets/nais.io/vault
-        kvPath: /kv/prod/fss/sparkel-sykepengeperioder/default
+        kvPath: /kv/prod/fss/sparkel-sykepengeperioder/tbd
       - mountPath: /var/run/secrets/nais.io/azure
         kvPath: /azuread/data/prod/creds/sparkel-sykepengeperioder
       - mountPath: /var/run/secrets/nais.io/service_user
