@@ -16,7 +16,7 @@ buildscript {
 }
 
 dependencies {
-    implementation("com.github.navikt:rapids-and-rivers:1.73dddb5")
+    implementation("com.github.navikt:rapids-and-rivers:1.74ae9cb")
 
     testImplementation("io.mockk:mockk:$mockkVersion")
     testImplementation("com.github.tomakehurst:wiremock:$wireMockVersion") {
@@ -35,6 +35,7 @@ val githubPassword: String by project
 repositories {
     mavenCentral()
     maven("https://packages.confluent.io/maven/")
+    maven("https://kotlin.bintray.com/ktor")
     maven {
         url = uri("https://maven.pkg.github.com/navikt/rapids-and-rivers")
         credentials {
