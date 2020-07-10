@@ -1,5 +1,5 @@
 # Sparkel behov
-![Bygg og deploy](https://github.com/navikt/helse-sparkel-sykepngeperioder/workflows/Bygg%20og%20deploy/badge.svg)
+![Bygg og deploy](https://github.com/navikt/helse-sparkel-sykepengeperioder/workflows/Bygg%20og%20deploy/badge.svg)
 
 ## Beskrivelse
 Løser oppslag-behov for andre tjenester i sykepengesfæren.
