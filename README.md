@@ -1,4 +1,4 @@
-# Sparkel behov
+# Sparkel sykepengeperioder
 ![Bygg og deploy](https://github.com/navikt/helse-sparkel-sykepengeperioder/workflows/Bygg%20og%20deploy/badge.svg)
 
 ## Beskrivelse
