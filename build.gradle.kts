@@ -1,9 +1,4 @@
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-
-val wireMockVersion = "2.19.0"
-val mockkVersion = "1.9.3"
-val junitJupiterVersion = "5.6.0"
-val mainClass = "no.nav.helse.sparkel.sykepengeperioder.AppKt"
+val junitJupiterVersion = "5.6.2"
 
 plugins {
     kotlin("jvm") version "1.3.72"
@@ -15,75 +10,58 @@ buildscript {
     }
 }
 
-dependencies {
-    implementation("com.github.navikt:rapids-and-rivers:1.74ae9cb")
+repositories {
+    mavenCentral()
+    maven("https://packages.confluent.io/maven/")
+    maven("https://kotlin.bintray.com/ktor")
+    maven("https://jitpack.io")
+}
 
-    testImplementation("io.mockk:mockk:$mockkVersion")
-    testImplementation("com.github.tomakehurst:wiremock:$wireMockVersion") {
+dependencies {
+    implementation("com.github.navikt:rapids-and-rivers:1.2954646")
+
+    testImplementation("io.mockk:mockk:1.10.0")
+    testImplementation("com.github.tomakehurst:wiremock:2.27.1") {
         exclude(group = "junit")
     }
-    testImplementation("no.nav:kafka-embedded-env:2.3.0")
-    testImplementation("org.awaitility:awaitility:4.0.1")
+    testImplementation("no.nav:kafka-embedded-env:2.4.0")
+    testImplementation("org.awaitility:awaitility:4.0.3")
     testImplementation("org.junit.jupiter:junit-jupiter-api:$junitJupiterVersion")
     testImplementation("org.junit.jupiter:junit-jupiter-params:$junitJupiterVersion")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$junitJupiterVersion")
 }
 
-val githubUser: String by project
-val githubPassword: String by project
-
-repositories {
-    mavenCentral()
-    maven("https://packages.confluent.io/maven/")
-    maven("https://kotlin.bintray.com/ktor")
-    maven {
-        url = uri("https://maven.pkg.github.com/navikt/rapids-and-rivers")
-        credentials {
-            username = githubUser
-            password = githubPassword
-        }
+tasks {
+    compileKotlin {
+        kotlinOptions.jvmTarget = "12"
     }
-}
+    compileTestKotlin {
+        kotlinOptions.jvmTarget = "12"
+    }
 
-java {
-    sourceCompatibility = JavaVersion.VERSION_12
-    targetCompatibility = JavaVersion.VERSION_12
-}
+    named<Jar>("jar") {
+        archiveBaseName.set("app")
 
-tasks.named<Jar>("jar") {
-    archiveBaseName.set("app")
+        manifest {
+            attributes["Main-Class"] = "no.nav.helse.sparkel.sykepengeperioder.AppKt"
+            attributes["Class-Path"] = configurations.runtimeClasspath.get().joinToString(separator = " ") {
+                it.name
+            }
+        }
 
-    manifest {
-        attributes["Main-Class"] = mainClass
-        attributes["Class-Path"] = configurations.runtimeClasspath.get().joinToString(separator = " ") {
-            it.name
+        doLast {
+            configurations.runtimeClasspath.get().forEach {
+                val file = File("$buildDir/libs/${it.name}")
+                if (!file.exists())
+                    it.copyTo(file)
+            }
         }
     }
 
-    doLast {
-        configurations.runtimeClasspath.get().forEach {
-            val file = File("$buildDir/libs/${it.name}")
-            if (!file.exists())
-                it.copyTo(file)
+    withType<Test> {
+        useJUnitPlatform()
+        testLogging {
+            events("passed", "skipped", "failed")
         }
     }
-}
-
-tasks.named<KotlinCompile>("compileKotlin") {
-    kotlinOptions.jvmTarget = "12"
-}
-
-tasks.named<KotlinCompile>("compileTestKotlin") {
-    kotlinOptions.jvmTarget = "12"
-}
-
-tasks.withType<Test> {
-    useJUnitPlatform()
-    testLogging {
-        events("passed", "skipped", "failed")
-    }
-}
-
-tasks.withType<Wrapper> {
-    gradleVersion = "5.6.2"
 }
