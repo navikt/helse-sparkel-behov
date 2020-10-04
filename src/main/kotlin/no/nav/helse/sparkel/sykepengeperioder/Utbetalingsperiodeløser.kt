@@ -30,9 +30,8 @@ internal class Utbetalingsperiodeløser(
             validate { it.requireKey("@id") }
             validate { it.requireKey("fødselsnummer") }
             validate { it.requireKey("vedtaksperiodeId") }
-            //TODO: når alle "gamle" behov er lest inn, skal ordentlig validering på plass igjen
-//            validate { it.require("$behov.historikkFom", JsonNode::asLocalDate) }
-//            validate { it.require("$behov.historikkTom", JsonNode::asLocalDate) }
+            validate { it.require("$behov.historikkFom", JsonNode::asLocalDate) }
+            validate { it.require("$behov.historikkTom", JsonNode::asLocalDate) }
         }.register(this)
     }
 
@@ -41,14 +40,9 @@ internal class Utbetalingsperiodeløser(
     }
 
     override fun onPacket(packet: JsonMessage, context: RapidsConnection.MessageContext) {
-        val json = objectMapper.readTree(packet.toJson())
-        val historikkFom =
-            if (!json.path("$behov.historikkFom").isMissingOrNull()) json.path("$behov.historikkFom").asLocalDate()
-            else json[behov]["historikkFom"].asLocalDate()
-        val historikkTom =
-            if (!json.path("$behov.historikkTom").isMissingOrNull()) json.path("$behov.historikkTom").asLocalDate()
-            else json[behov]["historikkTom"].asLocalDate()
         sikkerlogg.info("mottok melding: ${packet.toJson()}")
+        val historikkFom = packet["$behov.historikkFom"].asLocalDate()
+        val historikkTom = packet["$behov.historikkTom"].asLocalDate()
         infotrygdService.løsningForBehov(
             packet["@id"].asText(),
             packet["vedtaksperiodeId"].asText(),
