@@ -8,7 +8,6 @@ import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration
 import no.nav.helse.rapids_rivers.RapidsConnection
-import no.nav.helse.rapids_rivers.asLocalDate
 import no.nav.helse.sparkel.sykepengeperioder.infotrygd.AzureClient
 import no.nav.helse.sparkel.sykepengeperioder.infotrygd.InfotrygdClient
 import org.junit.jupiter.api.*
@@ -82,8 +81,8 @@ internal class UtbetalingsperiodeløserTest {
     }
 
     @Test
-    fun `løser enkelt behov V1`() {
-        testBehov(enkeltBehovV1())
+    fun `løser enkelt behov`() {
+        testBehov(enkeltBehov())
 
         val perioder = sendtMelding.løsning()
 
@@ -91,17 +90,8 @@ internal class UtbetalingsperiodeløserTest {
     }
 
     @Test
-    fun `løser enkelt behov V2`() {
-        testBehov(enkeltBehovV2())
-
-        val perioder = sendtMelding.løsning()
-
-        assertEquals(1, perioder.size)
-    }
-
-    @Test
-    fun `løser behovV1 med flere behov-nøkler`() {
-        testBehov(behovMedFlereBehovsnøklerV1())
+    fun `løser behov med flere behov-nøkler`() {
+        testBehov(behovMedFlereBehovsnøkler())
 
         val perioder = sendtMelding.løsning()
         println(sendtMelding.toPrettyString())
@@ -110,30 +100,14 @@ internal class UtbetalingsperiodeløserTest {
     }
 
     @Test
-    fun `løser behovV2 med flere behov-nøkler`() {
-        testBehov(behovMedFlereBehovsnøklerV2())
-
-        val perioder = sendtMelding.løsning()
-        println(sendtMelding.toPrettyString())
-
-        assertEquals(1, perioder.size)
-    }
-
-    @Test
-    fun `River svarer på V1 behov`() {
-        testBehov(behovMedFlereBehovsnøklerV1())
-        assertFalse(sendtMelding.isEmpty)
-    }
-
-    @Test
-    fun `River svarer på V2 behov`() {
-        testBehov(behovMedFlereBehovsnøklerV2())
+    fun `River svarer på behov`() {
+        testBehov(behovMedFlereBehovsnøkler())
         assertFalse(sendtMelding.isEmpty)
     }
 
     @Test
     fun `mapper også ut perioder`() {
-        testBehov(enkeltBehovV1())
+        testBehov(enkeltBehov())
 
         val løsninger = sendtMelding.løsning()
         assertEquals(1, løsninger.size)
@@ -189,23 +163,7 @@ internal class UtbetalingsperiodeløserTest {
         assertEquals(organisasjonsnummer, periode.organisasjonsnummer)
     }
 
-    private fun behovMedFlereBehovsnøklerV1() =
-        """
-        {
-            "@event_name" : "behov",
-            "@behov" : [ "HentEnhet", "HentPersoninfo", "HentInfotrygdutbetalinger" ],
-            "@id" : "id",
-            "@opprettet" : "2020-05-18",
-            "spleisBehovId" : "spleisBehovId",
-            "vedtaksperiodeId" : "vedtaksperiodeId",
-            "fødselsnummer" : "fnr",
-            "orgnummer" : "orgnr",
-            "HentInfotrygdutbetalinger.historikkFom" : "2017-05-18",
-            "HentInfotrygdutbetalinger.historikkTom" : "2020-05-18"
-        }
-        """.trimIndent()
-
-    private fun behovMedFlereBehovsnøklerV2() =
+    private fun behovMedFlereBehovsnøkler() =
         """
         {
             "@event_name" : "behov",
@@ -223,23 +181,7 @@ internal class UtbetalingsperiodeløserTest {
         }
         """.trimIndent()
 
-    private fun enkeltBehovV1() =
-        """
-        {
-            "@event_name" : "behov",
-            "@behov" : [ "HentInfotrygdutbetalinger" ],
-            "@id" : "id",
-            "@opprettet" : "2020-05-18",
-            "spleisBehovId" : "spleisBehovId",
-            "vedtaksperiodeId" : "vedtaksperiodeId",
-            "fødselsnummer" : "fnr",
-            "orgnummer" : "orgnr",
-            "HentInfotrygdutbetalinger.historikkFom" : "2017-05-18",
-            "HentInfotrygdutbetalinger.historikkTom" : "2020-05-18"
-        }
-        """.trimIndent()
-
-    private fun enkeltBehovV2() =
+    private fun enkeltBehov() =
         """
         {
             "@event_name" : "behov",
