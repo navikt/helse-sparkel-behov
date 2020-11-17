@@ -20,6 +20,11 @@
       "behandlet": "2019-06-03",
       "yrkesskadeArt": "",
       "utbetalingList": [],
+      "statslonnList": [
+        {
+          "statLonn": 100
+        }
+      ],
       "inntektList": [],
       "graderingList": [
         {
@@ -190,6 +195,7 @@
           "arbOrgnr": 88888888
         }
       ],
+      "statslonnList": [],
       "inntektList": [
         {
           "orgNr": "88888888",
@@ -280,6 +286,7 @@
       "behandlet": "2018-11-09",
       "yrkesskadeArt": "",
       "utbetalingList": [],
+      "statslonnList": [],
       "inntektList": [],
       "graderingList": [
         {
@@ -324,6 +331,7 @@
           "arbOrgnr": 98888888
         }
       ],
+      "statslonnList": [],
       "inntektList": [
         {
           "orgNr": "98888888",
@@ -374,6 +382,7 @@
       "behandlet": "2018-08-26",
       "yrkesskadeArt": "",
       "utbetalingList": [],
+      "statslonnList": [],
       "inntektList": [],
       "graderingList": [
         {
@@ -429,6 +438,7 @@
           "arbOrgnr": 88888888
         }
       ],
+      "statslonnList": [],
       "inntektList": [
         {
           "orgNr": "88888888",
@@ -505,6 +515,7 @@
           "arbOrgnr": 88888888
         }
       ],
+      "statslonnList": [],
       "inntektList": [
         {
           "orgNr": "88888888",
@@ -555,6 +566,7 @@
       "behandlet": "2018-02-20",
       "yrkesskadeArt": "",
       "utbetalingList": [],
+      "statslonnList": [],
       "inntektList": [],
       "graderingList": [
         {
@@ -590,6 +602,7 @@
       "behandlet": "2017-02-26",
       "yrkesskadeArt": "",
       "utbetalingList": [],
+      "statslonnList": [],
       "inntektList": [],
       "graderingList": [
         {
@@ -620,6 +633,7 @@
       "behandlet": "2016-09-17",
       "yrkesskadeArt": "",
       "utbetalingList": [],
+      "statslonnList": [],
       "inntektList": [],
       "graderingList": [
         {
@@ -685,6 +699,7 @@
           "arbOrgnr": 89888888
         }
       ],
+      "statslonnList": [],
       "inntektList": [
         {
           "orgNr": "89888888",
@@ -873,6 +888,7 @@
           "arbOrgnr": 88888888
         }
       ],
+      "statslonnList": [],
       "inntektList": [
         {
           "orgNr": "88888888",
@@ -1004,6 +1020,7 @@
           "arbOrgnr": 88888888
         }
       ],
+      "statslonnList": [],
       "inntektList": [
         {
           "orgNr": "88888888",
@@ -1079,6 +1096,7 @@
           "arbOrgnr": 88888888
         }
       ],
+      "statslonnList": [],
       "inntektList": [
         {
           "orgNr": "88888888",
@@ -1224,6 +1242,7 @@
           "arbOrgnr": 88888888
         }
       ],
+      "statslonnList": [],
       "inntektList": [
         {
           "orgNr": "88888888",
@@ -1408,6 +1427,7 @@
           "arbOrgnr": 88888888
         }
       ],
+      "statslonnList": [],
       "inntektList": [
         {
           "orgNr": "88888888",
@@ -1567,6 +1587,7 @@
           "arbOrgnr": 88888888
         }
       ],
+      "statslonnList": [],
       "inntektList": [
         {
           "orgNr": "88888888",
@@ -1650,6 +1671,7 @@
           "arbOrgnr": 88888888
         }
       ],
+      "statslonnList": [],
       "inntektList": [
         {
           "orgNr": "88888888",
@@ -1703,6 +1725,7 @@
           "arbOrgnr": 88888888
         }
       ],
+      "statslonnList": [],
       "inntektList": [
         {
           "orgNr": "88888888",
@@ -1756,6 +1779,7 @@
           "arbOrgnr": 88888888
         }
       ],
+      "statslonnList": [],
       "inntektList": [
         {
           "orgNr": "88888888",

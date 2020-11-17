@@ -17,8 +17,16 @@ internal class UtbetalingshistorikkTest {
         assertNotNull(utbetalingshistorikk.inntektsopplysninger)
         assertNotNull(utbetalingshistorikk.utbetalteSykeperioder)
         assertEquals(LocalDate.of(2019, 11, 8), utbetalingshistorikk.maksDato)
-        assertEquals(12,utbetalingshistorikk.utbetalteSykeperioder.size)
+        assertEquals(12, utbetalingshistorikk.utbetalteSykeperioder.size)
         assertEquals("", utbetalingshistorikk.utbetalteSykeperioder[11].typeKode)
+        assertFalse(utbetalingshistorikk.statslønn)
+    }
+
+    @Test
+    internal fun `historikk med statslønn`() {
+        val json = readJson("infotrygdResponse.json")
+        val utbetalingshistorikk = Utbetalingshistorikk(json["sykmeldingsperioder"][0])
+        assertTrue(utbetalingshistorikk.statslønn)
     }
 
     @Test
@@ -28,10 +36,11 @@ internal class UtbetalingshistorikkTest {
 
         assertNotNull(utbetalingshistorikk.inntektsopplysninger)
         assertNotNull(utbetalingshistorikk.utbetalteSykeperioder)
-        assertEquals(12,utbetalingshistorikk.utbetalteSykeperioder.size)
+        assertEquals(12, utbetalingshistorikk.utbetalteSykeperioder.size)
         assertNull(utbetalingshistorikk.utbetalteSykeperioder[1].fom)
         assertNull(utbetalingshistorikk.utbetalteSykeperioder[2].tom)
         assertEquals("", utbetalingshistorikk.utbetalteSykeperioder[11].typeKode)
+        assertFalse(utbetalingshistorikk.statslønn)
     }
 
     @Test

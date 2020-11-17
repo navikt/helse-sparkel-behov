@@ -27,6 +27,7 @@ class Utbetalingshistorikk(jsonNode: JsonNode) {
 
     val utbetalteSykeperioder = jsonNode["utbetalingList"].map { Utbetaling(it, inntektsopplysninger) }
     val maksDato: LocalDate? = jsonNode["slutt"]?.takeUnless { it.isNull }?.textValue()?.let { LocalDate.parse(it) }
+    val statslønn: Boolean = !jsonNode.path("statslonnList").isEmpty
 }
 
 data class Utbetaling(
