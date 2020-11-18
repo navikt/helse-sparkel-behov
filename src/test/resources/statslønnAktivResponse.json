@@ -1,0 +1,236 @@
+
+{
+  "sykmeldingsperioder": [
+    {
+      "ident": 111111111145680,
+      "tknr": "1111",
+      "seq": 79111111,
+      "sykemeldtFom": "2020-08-19",
+      "sykemeldtTom": "2020-12-18",
+      "grad": "100",
+      "slutt": "2021-08-17",
+      "erArbeidsgiverPeriode": true,
+      "stansAarsakKode": "",
+      "stansAarsak": "Ukjent..",
+      "unntakAktivitet": "M",
+      "arbeidsKategoriKode": "01",
+      "arbeidsKategori": "Arbeidstaker",
+      "arbeidsKategori99": "",
+      "erSanksjonBekreftet": "",
+      "sanksjonsDager": 0,
+      "sykemelder": "TROND-VIGGO TORGERSEN",
+      "behandlet": "2020-08-19",
+      "yrkesskadeArt": "",
+      "utbetalingList": [
+        {
+          "fom": "2020-09-05",
+          "tom": "2020-09-25",
+          "utbetalingsGrad": "100",
+          "oppgjorsType": "",
+          "utbetalt": "2020-10-07",
+          "dagsats": 2176,
+          "typeKode": "5",
+          "typeTekst": "ArbRef",
+          "arbOrgnr": 70000000
+        },
+        {
+          "fom": "2020-09-04",
+          "tom": "2020-09-04",
+          "utbetalingsGrad": "100",
+          "oppgjorsType": "",
+          "utbetalt": "2020-09-22",
+          "dagsats": 2176,
+          "typeKode": "5",
+          "typeTekst": "ArbRef",
+          "arbOrgnr": 70000000
+        }
+      ],
+      "inntektList": [
+        {
+          "orgNr": "70000000",
+          "sykepengerFom": "2020-09-04",
+          "refusjonTom": null,
+          "refusjonsType": "J",
+          "periodeKode": "Å",
+          "periode": "Årlig",
+          "loenn": 565700
+        }
+      ],
+      "graderingList": [
+        {
+          "gradertFom": "2020-10-17",
+          "gradertTom": "2020-11-17",
+          "grad": "100"
+        },
+        {
+          "gradertFom": "2020-09-26",
+          "gradertTom": "2020-10-16",
+          "grad": "100"
+        },
+        {
+          "gradertFom": "2020-09-05",
+          "gradertTom": "2020-09-25",
+          "grad": "100"
+        },
+        {
+          "gradertFom": "2020-08-19",
+          "gradertTom": "2020-12-18",
+          "grad": "100"
+        },
+        {
+          "gradertFom": "2020-08-19",
+          "gradertTom": "2020-09-04",
+          "grad": "100"
+        }
+      ],
+      "forsikring": [],
+      "statslonnList": [
+        {
+          "statLonn": 8976,
+          "natural": 0,
+          "utbet_natural": " ",
+          "opphoer_natural": null,
+          "reduksjon_beloep": 0,
+          "reduksjon_type": " ",
+          "reduksjon_fom": null,
+          "reduksjon_tom": null
+        }
+      ]
+    },
+    {
+      "ident": 508111111111680,
+      "tknr": "2222",
+      "seq": 79809999,
+      "sykemeldtFom": "2019-01-21",
+      "sykemeldtTom": "2019-06-20",
+      "grad": "035",
+      "slutt": "2020-01-15",
+      "erArbeidsgiverPeriode": true,
+      "stansAarsakKode": "AF",
+      "stansAarsak": "AvsluttetFrisk",
+      "unntakAktivitet": "",
+      "arbeidsKategoriKode": "01",
+      "arbeidsKategori": "Arbeidstaker",
+      "arbeidsKategori99": "",
+      "erSanksjonBekreftet": "",
+      "sanksjonsDager": 0,
+      "opphoerFom": "2019-06-21",
+      "sykemelder": "TROND-VIGGO TORGERSEN",
+      "behandlet": "2019-01-21",
+      "yrkesskadeArt": "",
+      "utbetalingList": [
+        {
+          "fom": "2019-06-02",
+          "tom": "2019-06-20",
+          "utbetalingsGrad": "035",
+          "oppgjorsType": "",
+          "utbetalt": "2019-06-25",
+          "dagsats": 683,
+          "typeKode": "5",
+          "typeTekst": "ArbRef",
+          "arbOrgnr": 70000000
+        },
+        {
+          "fom": "2019-05-17",
+          "tom": "2019-06-01",
+          "utbetalingsGrad": "035",
+          "oppgjorsType": "",
+          "utbetalt": "2019-06-11",
+          "dagsats": 683,
+          "typeKode": "5",
+          "typeTekst": "ArbRef",
+          "arbOrgnr": 70000000
+        },
+        {
+          "fom": "2019-05-01",
+          "tom": "2019-05-16",
+          "utbetalingsGrad": "035",
+          "oppgjorsType": "",
+          "utbetalt": "2019-05-23",
+          "dagsats": 683,
+          "typeKode": "5",
+          "typeTekst": "ArbRef",
+          "arbOrgnr": 70000000
+        },
+        {
+          "fom": "2019-04-15",
+          "tom": "2019-04-30",
+          "utbetalingsGrad": "035",
+          "oppgjorsType": "",
+          "utbetalt": "2019-05-09",
+          "dagsats": 683,
+          "typeKode": "5",
+          "typeTekst": "ArbRef",
+          "arbOrgnr": 70000000
+        },
+        {
+          "fom": "2019-03-30",
+          "tom": "2019-04-14",
+          "utbetalingsGrad": "035",
+          "oppgjorsType": "",
+          "utbetalt": "2019-04-26",
+          "dagsats": 683,
+          "typeKode": "5",
+          "typeTekst": "ArbRef",
+          "arbOrgnr": 70000000
+        },
+        {
+          "fom": "2019-02-04",
+          "tom": "2019-03-29",
+          "utbetalingsGrad": "070",
+          "oppgjorsType": "",
+          "utbetalt": "2019-04-05",
+          "dagsats": 1367,
+          "typeKode": "5",
+          "typeTekst": "ArbRef",
+          "arbOrgnr": 70000000
+        }
+      ],
+      "inntektList": [
+        {
+          "orgNr": "70000000",
+          "sykepengerFom": "2019-02-04",
+          "refusjonTom": null,
+          "refusjonsType": "J",
+          "periodeKode": "Å",
+          "periode": "Årlig",
+          "loenn": 507680
+        }
+      ],
+      "graderingList": [
+        {
+          "gradertFom": "2019-05-01",
+          "gradertTom": "2019-06-01",
+          "grad": "035"
+        },
+        {
+          "gradertFom": "2019-03-30",
+          "gradertTom": "2019-04-30",
+          "grad": "035"
+        },
+        {
+          "gradertFom": "2019-03-02",
+          "gradertTom": "2019-03-29",
+          "grad": "070"
+        },
+        {
+          "gradertFom": "2019-02-02",
+          "gradertTom": "2019-03-01",
+          "grad": "070"
+        },
+        {
+          "gradertFom": "2019-01-21",
+          "gradertTom": "2019-02-01",
+          "grad": "070"
+        },
+        {
+          "gradertFom": "2019-01-21",
+          "gradertTom": "2019-06-20",
+          "grad": "035"
+        }
+      ],
+      "forsikring": [],
+      "statslonnList": []
+    }
+  ]
+}

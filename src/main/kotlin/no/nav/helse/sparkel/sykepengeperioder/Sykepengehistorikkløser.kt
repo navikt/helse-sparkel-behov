@@ -43,7 +43,9 @@ internal class Sykepengehistorikkløser(
             packet["historikkTom"].asLocalDate()
         )?.let { løsning ->
             packet["@løsning"] = mapOf(
-                behov to løsning.map { Utbetalingshistorikk(it) }
+                behov to løsning
+                        .sortedByDescending { it["sykemeldtFom"].asLocalDate() }
+                        .mapIndexed { index, jsonNode -> Utbetalingshistorikk(jsonNode, index == 0) }
             )
             context.send(packet.toJson().also { json ->
                 sikkerlogg.info(

@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode
 import org.slf4j.LoggerFactory
 import java.time.LocalDate
 
-class Utbetalingshistorikk(jsonNode: JsonNode) {
+class Utbetalingshistorikk(jsonNode: JsonNode, sjekkStatslønn: Boolean = false) {
     companion object {
         internal val log = LoggerFactory.getLogger(Utbetalingshistorikk::class.java)
         private val tjenestekallLog = LoggerFactory.getLogger("tjenestekall")
@@ -27,7 +27,7 @@ class Utbetalingshistorikk(jsonNode: JsonNode) {
 
     val utbetalteSykeperioder = jsonNode["utbetalingList"].map { Utbetaling(it, inntektsopplysninger) }
     val maksDato: LocalDate? = jsonNode["slutt"]?.takeUnless { it.isNull }?.textValue()?.let { LocalDate.parse(it) }
-    val statslønn: Boolean = !jsonNode.path("statslonnList").isEmpty
+    val statslønn: Boolean = sjekkStatslønn && !jsonNode.path("statslonnList").isEmpty
 }
 
 data class Utbetaling(

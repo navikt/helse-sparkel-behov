@@ -23,13 +23,6 @@ internal class UtbetalingshistorikkTest {
     }
 
     @Test
-    internal fun `historikk med statslønn`() {
-        val json = readJson("infotrygdResponse.json")
-        val utbetalingshistorikk = Utbetalingshistorikk(json["sykmeldingsperioder"][0])
-        assertTrue(utbetalingshistorikk.statslønn)
-    }
-
-    @Test
     internal fun `utbetalingshistorikk med manglende fom og tom i utbetalingslisten`() {
         val json = readJson("infotrygdResponseMissingFomAndTom.json")
         val utbetalingshistorikk = Utbetalingshistorikk(json["sykmeldingsperioder"][1])

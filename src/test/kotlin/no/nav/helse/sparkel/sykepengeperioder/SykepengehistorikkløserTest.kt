@@ -5,13 +5,23 @@ import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.github.tomakehurst.wiremock.WireMockServer
-import com.github.tomakehurst.wiremock.client.WireMock.*
+import com.github.tomakehurst.wiremock.client.WireMock.aResponse
+import com.github.tomakehurst.wiremock.client.WireMock.configureFor
+import com.github.tomakehurst.wiremock.client.WireMock.create
+import com.github.tomakehurst.wiremock.client.WireMock.equalTo
+import com.github.tomakehurst.wiremock.client.WireMock.get
+import com.github.tomakehurst.wiremock.client.WireMock.post
+import com.github.tomakehurst.wiremock.client.WireMock.stubFor
+import com.github.tomakehurst.wiremock.client.WireMock.urlMatching
+import com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration
 import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.sparkel.sykepengeperioder.infotrygd.AzureClient
 import no.nav.helse.sparkel.sykepengeperioder.infotrygd.InfotrygdClient
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
@@ -60,7 +70,7 @@ internal class SykepengehistorikkløserTest {
     fun setup() {
         wireMockServer.start()
         configureFor(create().port(wireMockServer.port()).build())
-        stubEksterneEndepunkt()
+        stubAuthEndepunkt()
         service = InfotrygdService(
             InfotrygdClient(
                 baseUrl = wireMockServer.baseUrl(),
@@ -81,6 +91,8 @@ internal class SykepengehistorikkløserTest {
 
     @Test
     fun `løser behov`() {
+        stubSvarFraInfotrygd()
+
         val behov =
             """{"@id": "behovsid", "@behov":["${Sykepengehistorikkløser.behov}"], "historikkFom": "2016-01-01", "historikkTom": "2020-01-01", "fødselsnummer": "fnr", "vedtaksperiodeId": "id" }"""
 
@@ -88,11 +100,13 @@ internal class SykepengehistorikkløserTest {
 
         val perioder = sendtMelding.løsning()
 
-        assertEquals(1, perioder.size)
+        assertEquals(2, perioder.size)
     }
 
     @Test
     internal fun `mapper også ut inntekt og dagsats`() {
+        stubSvarFraInfotrygd()
+
         val behov =
             """{"@id": "behovsid", "@behov":["${Sykepengehistorikkløser.behov}"], "historikkFom": "2016-01-01", "historikkTom": "2020-01-01", "fødselsnummer": "fnr", "vedtaksperiodeId": "id" }"""
 
@@ -100,23 +114,56 @@ internal class SykepengehistorikkløserTest {
 
         val perioder = sendtMelding.løsning()
 
-        assertEquals(1, perioder.size)
+        assertEquals(2, perioder.size)
 
         assertSykeperiode(
             sykeperiode = perioder[0].utbetalteSykeperioder[0],
-            fom = 19.januar,
-            tom = 23.januar,
+            fom = 5.september(2020),
+            tom = 25.september(2020),
             grad = "100",
             orgnummer = orgnummer,
-            dagsats = 870.0
+            dagsats = 2176.0
         )
 
         assertInntektsopplysninger(
             inntektsopplysninger = perioder[0].inntektsopplysninger,
-            dato = 19.januar,
-            inntektPerMåned = 18852,
+            dato = 4.september(2020),
+            inntektPerMåned = 565700 / 12,
             orgnummer = orgnummer
         )
+        assertInntektsopplysninger(
+            inntektsopplysninger = perioder[1].inntektsopplysninger,
+            dato = 4.februar(2019),
+            inntektPerMåned = 507680 / 12,
+            orgnummer = orgnummer
+        )
+    }
+
+    @Test
+    fun `setter ikke statslønn hvis tidligere periode har statslønn`() {
+        stubSvarFraInfotrygd()
+        val behov =
+                """{"@id": "behovsid", "@behov":["${Sykepengehistorikkløser.behov}"], "historikkFom": "2016-01-01", "historikkTom": "2020-01-01", "fødselsnummer": "fnr", "vedtaksperiodeId": "id" }"""
+
+        testBehov(behov)
+        sendtMelding.løsning().let { utenStatslønn ->
+            utenStatslønn.forEach { periode ->
+                assertFalse(periode.statslønn)
+            }
+        }
+    }
+
+    @Test
+    fun `setter statslønn hvis nyeste periode har statslønn`() {
+        stubSvarFraInfotrygdMedAktivStatslønn()
+        val behov =
+                """{"@id": "behovsid", "@behov":["${Sykepengehistorikkløser.behov}"], "historikkFom": "2016-01-01", "historikkTom": "2020-01-01", "fødselsnummer": "fnr", "vedtaksperiodeId": "id" }"""
+
+        testBehov(behov)
+        sendtMelding.løsning().let { medStatlønn ->
+            assertTrue(medStatlønn[0].statslønn)
+            assertFalse(medStatlønn[1].statslønn)
+        }
     }
 
     private fun JsonNode.løsning() = this.path("@løsning").path(Sykepengehistorikkløser.behov).map {
@@ -131,6 +178,7 @@ internal class SykepengehistorikkløserTest {
         val inntektsopplysninger = json["inntektsopplysninger"].map {
             Inntektsopplysning(it)
         }
+        val statslønn = json["statslønn"].asBoolean()
 
         class UtbetalteSykeperiode(json: JsonNode) {
             val fom = json["fom"].asLocalDate()
@@ -159,7 +207,8 @@ internal class SykepengehistorikkløserTest {
     private fun assertSykeperiode(
         sykeperiode: Utbetalingshistorikk.UtbetalteSykeperiode,
         fom: LocalDate,
-        tom: LocalDate,       grad: String,
+        tom: LocalDate,
+        grad: String,
         orgnummer: String,
         dagsats: Double
     ) {
@@ -181,7 +230,7 @@ internal class SykepengehistorikkløserTest {
         assertEquals(orgnummer, inntektsopplysninger[0].orgnummer)
     }
 
-    private fun stubEksterneEndepunkt() {
+    private fun stubAuthEndepunkt() {
         stubFor(
             post(urlMatching("/AZURE_TENANT_ID/oauth2/v2.0/token"))
                 .willReturn(
@@ -197,73 +246,35 @@ internal class SykepengehistorikkløserTest {
                         )
                 )
         )
+    }
+
+    private fun stubSvarFraInfotrygdMedAktivStatslønn() {
         stubFor(
-            get(urlPathEqualTo("/v1/hentSykepengerListe"))
-                .withHeader("Accept", equalTo("application/json"))
-                .willReturn(
-                    aResponse()
-                        .withStatus(200)
-                        .withHeader("Content-Type", "application/json")
-                        .withBody(
-                            """{
-                                      "sykmeldingsperioder": [
-                                        {
-                                          "ident": 1000,
-                                          "tknr": "0220",
-                                          "seq": 79999596,
-                                          "sykemeldtFom": "2018-01-03",
-                                          "sykemeldtTom": "2018-01-23",
-                                          "grad": "100",
-                                          "slutt": "2019-03-30",
-                                          "erArbeidsgiverPeriode": true,
-                                          "stansAarsakKode": "AF",
-                                          "stansAarsak": "AvsluttetFrisk",
-                                          "unntakAktivitet": "",
-                                          "arbeidsKategoriKode": "01",
-                                          "arbeidsKategori": "Arbeidstaker",
-                                          "arbeidsKategori99": "",
-                                          "erSanksjonBekreftet": "",
-                                          "sanksjonsDager": 0,
-                                          "sykemelder": "NØDNUMMER",
-                                          "behandlet": "2018-01-05",
-                                          "yrkesskadeArt": "",
-                                          "utbetalingList": [
-                                            {
-                                              "fom": "2018-01-19",
-                                              "tom": "2018-01-23",
-                                              "utbetalingsGrad": "100",
-                                              "oppgjorsType": "50",
-                                              "utbetalt": "2018-02-16",
-                                              "dagsats": 870.0,
-                                              "typeKode": "5",
-                                              "typeTekst": "ArbRef",
-                                              "arbOrgnr": 80000000
-                                            }
-                                          ],
-                                          "inntektList": [
-                                            {
-                                              "orgNr": "80000000",
-                                              "sykepengerFom": "2018-01-19",
-                                              "refusjonTom": "2018-01-30",
-                                              "refusjonsType": "H",
-                                              "periodeKode": "U",
-                                              "periode": "Ukentlig",
-                                              "loenn": 4350.5
-                                            }
-                                          ],
-                                          "graderingList": [
-                                            {
-                                              "gradertFom": "2018-01-03",
-                                              "gradertTom": "2018-01-23",
-                                              "grad": "100"
-                                            }
-                                          ],
-                                          "forsikring": []
-                                        }
-                                      ]
-                                    }"""
+                get(urlPathEqualTo("/v1/hentSykepengerListe"))
+                        .withHeader("Accept", equalTo("application/json"))
+                        .willReturn(
+                                aResponse()
+                                        .withStatus(200)
+                                        .withHeader("Content-Type", "application/json")
+                                        .withBody(
+                                                getContents("statslønnAktivResponse.json")
+                                        )
                         )
-                )
         )
     }
+
+    private fun stubSvarFraInfotrygd() {
+        stubFor(
+                get(urlPathEqualTo("/v1/hentSykepengerListe"))
+                        .withHeader("Accept", equalTo("application/json"))
+                        .willReturn(
+                                aResponse()
+                                        .withStatus(200)
+                                        .withHeader("Content-Type", "application/json")
+                                        .withBody(getContents("statslønnTidligereResponse.json"))
+                        )
+        )
+    }
+
+    private fun getContents(filename: String) = this::class.java.getResource("/$filename").readText()
 }
