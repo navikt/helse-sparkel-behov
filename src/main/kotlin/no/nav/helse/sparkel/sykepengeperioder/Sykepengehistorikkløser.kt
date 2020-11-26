@@ -23,7 +23,7 @@ internal class Sykepengehistorikkløser(
             validate { it.rejectKey("@løsning") }
             validate { it.requireKey("@id") }
             validate { it.requireKey("fødselsnummer") }
-            validate { it.requireKey("vedtaksperiodeId") }
+            validate { it.interestedIn("vedtaksperiodeId") }
             validate { it.require("historikkFom", JsonNode::asLocalDate) }
             validate { it.require("historikkTom", JsonNode::asLocalDate) }
         }.register(this)

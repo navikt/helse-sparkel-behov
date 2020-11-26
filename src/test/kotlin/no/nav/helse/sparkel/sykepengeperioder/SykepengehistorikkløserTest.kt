@@ -18,13 +18,10 @@ import com.github.tomakehurst.wiremock.core.WireMockConfiguration
 import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.sparkel.sykepengeperioder.infotrygd.AzureClient
 import no.nav.helse.sparkel.sykepengeperioder.infotrygd.InfotrygdClient
-import org.junit.jupiter.api.AfterAll
+import org.junit.jupiter.api.*
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
-import org.junit.jupiter.api.BeforeAll
-import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.TestInstance.Lifecycle
 import java.time.LocalDate
 
@@ -100,6 +97,19 @@ internal class SykepengehistorikkløserTest {
 
         val perioder = sendtMelding.løsning()
 
+        assertEquals(2, perioder.size)
+    }
+
+    @Test
+    fun `løser behov uten vedtaksperiodeId`() {
+        stubSvarFraInfotrygd()
+
+        val behov =
+            """{"@id": "behovsid", "@behov":["${Sykepengehistorikkløser.behov}"], "historikkFom": "2016-01-01", "historikkTom": "2020-01-01", "fødselsnummer": "fnr" }"""
+
+        testBehov(behov)
+
+        val perioder = sendtMelding.løsning()
         assertEquals(2, perioder.size)
     }
 
