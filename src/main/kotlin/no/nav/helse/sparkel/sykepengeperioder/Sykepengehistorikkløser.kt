@@ -24,8 +24,8 @@ internal class Sykepengehistorikkløser(
             validate { it.requireKey("@id") }
             validate { it.requireKey("fødselsnummer") }
             validate { it.interestedIn("vedtaksperiodeId") }
-            validate { it.require("historikkFom", JsonNode::asLocalDate) }
-            validate { it.require("historikkTom", JsonNode::asLocalDate) }
+            validate { it.require("$behov.historikkFom", JsonNode::asLocalDate) }
+            validate { it.require("$behov.historikkTom", JsonNode::asLocalDate) }
         }.register(this)
     }
 
@@ -39,8 +39,8 @@ internal class Sykepengehistorikkløser(
             packet["@id"].asText(),
             packet["vedtaksperiodeId"].asText(),
             packet["fødselsnummer"].asText(),
-            packet["historikkFom"].asLocalDate(),
-            packet["historikkTom"].asLocalDate()
+            packet["$behov.historikkFom"].asLocalDate(),
+            packet["$behov.historikkTom"].asLocalDate()
         )?.let { løsning ->
             packet["@løsning"] = mapOf(
                 behov to løsning

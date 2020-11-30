@@ -91,7 +91,7 @@ internal class SykepengehistorikkløserTest {
         stubSvarFraInfotrygd()
 
         val behov =
-            """{"@id": "behovsid", "@behov":["${Sykepengehistorikkløser.behov}"], "historikkFom": "2016-01-01", "historikkTom": "2020-01-01", "fødselsnummer": "fnr", "vedtaksperiodeId": "id" }"""
+            """{"@id": "behovsid", "@behov":["${Sykepengehistorikkløser.behov}"], "${Sykepengehistorikkløser.behov}": { "historikkFom": "2016-01-01", "historikkTom": "2020-01-01"}, "fødselsnummer": "fnr", "vedtaksperiodeId": "id" }"""
 
         testBehov(behov)
 
@@ -105,7 +105,7 @@ internal class SykepengehistorikkløserTest {
         stubSvarFraInfotrygd()
 
         val behov =
-            """{"@id": "behovsid", "@behov":["${Sykepengehistorikkløser.behov}"], "historikkFom": "2016-01-01", "historikkTom": "2020-01-01", "fødselsnummer": "fnr" }"""
+            """{"@id": "behovsid", "@behov":["${Sykepengehistorikkløser.behov}"], "${Sykepengehistorikkløser.behov}": { "historikkFom": "2016-01-01", "historikkTom": "2020-01-01"}, "fødselsnummer": "fnr" }"""
 
         testBehov(behov)
 
@@ -118,7 +118,7 @@ internal class SykepengehistorikkløserTest {
         stubSvarFraInfotrygd()
 
         val behov =
-            """{"@id": "behovsid", "@behov":["${Sykepengehistorikkløser.behov}"], "historikkFom": "2016-01-01", "historikkTom": "2020-01-01", "fødselsnummer": "fnr", "vedtaksperiodeId": "id" }"""
+            """{"@id": "behovsid", "@behov":["${Sykepengehistorikkløser.behov}"], "${Sykepengehistorikkløser.behov}": { "historikkFom": "2016-01-01", "historikkTom": "2020-01-01" }, "fødselsnummer": "fnr", "vedtaksperiodeId": "id" }"""
 
         testBehov(behov)
 
@@ -153,7 +153,7 @@ internal class SykepengehistorikkløserTest {
     fun `setter ikke statslønn hvis tidligere periode har statslønn`() {
         stubSvarFraInfotrygd()
         val behov =
-                """{"@id": "behovsid", "@behov":["${Sykepengehistorikkløser.behov}"], "historikkFom": "2016-01-01", "historikkTom": "2020-01-01", "fødselsnummer": "fnr", "vedtaksperiodeId": "id" }"""
+                """{"@id": "behovsid", "@behov":["${Sykepengehistorikkløser.behov}"], "${Sykepengehistorikkløser.behov}": { "historikkFom": "2016-01-01", "historikkTom": "2020-01-01"}, "fødselsnummer": "fnr", "vedtaksperiodeId": "id" }"""
 
         testBehov(behov)
         sendtMelding.løsning().let { utenStatslønn ->
@@ -167,7 +167,7 @@ internal class SykepengehistorikkløserTest {
     fun `setter statslønn hvis nyeste periode har statslønn`() {
         stubSvarFraInfotrygdMedAktivStatslønn()
         val behov =
-                """{"@id": "behovsid", "@behov":["${Sykepengehistorikkløser.behov}"], "historikkFom": "2016-01-01", "historikkTom": "2020-01-01", "fødselsnummer": "fnr", "vedtaksperiodeId": "id" }"""
+                """{"@id": "behovsid", "@behov":["${Sykepengehistorikkløser.behov}"], "${Sykepengehistorikkløser.behov}": { "historikkFom": "2016-01-01", "historikkTom": "2020-01-01" }, "fødselsnummer": "fnr", "vedtaksperiodeId": "id" }"""
 
         testBehov(behov)
         sendtMelding.løsning().let { medStatlønn ->
