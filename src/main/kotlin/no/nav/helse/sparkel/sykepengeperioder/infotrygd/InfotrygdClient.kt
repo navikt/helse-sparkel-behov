@@ -25,7 +25,6 @@ class InfotrygdClient(
 
     internal fun hentHistorikk(
         behovId: String,
-        vedtaksperiodeId: String,
         fnr: String,
         fom: LocalDate,
         tom: LocalDate
@@ -47,8 +46,7 @@ class InfotrygdClient(
 
         tjenestekallLog.info(
             "svar fra Infotrygd: url=$url responseCode=$responseCode responseBody=$responseBody",
-            keyValue("id", behovId),
-            keyValue("vedtaksperiodeId", vedtaksperiodeId)
+            keyValue("id", behovId)
         )
 
         if (responseCode >= 300 || responseBody == null) {
@@ -59,11 +57,9 @@ class InfotrygdClient(
 
         try {
             MDC.put("id", behovId)
-            MDC.put("vedtaksperiodeId", vedtaksperiodeId)
             return jsonNode["sykmeldingsperioder"] as ArrayNode
         } finally {
             MDC.remove("id")
-            MDC.remove("vedtaksperiodeID")
         }
     }
 }

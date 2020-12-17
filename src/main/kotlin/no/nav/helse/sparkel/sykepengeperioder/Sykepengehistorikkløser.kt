@@ -23,7 +23,6 @@ internal class Sykepengehistorikkløser(
             validate { it.rejectKey("@løsning") }
             validate { it.requireKey("@id") }
             validate { it.requireKey("fødselsnummer") }
-            validate { it.interestedIn("vedtaksperiodeId") }
             validate { it.require("$behov.historikkFom", JsonNode::asLocalDate) }
             validate { it.require("$behov.historikkTom", JsonNode::asLocalDate) }
         }.register(this)
@@ -37,7 +36,6 @@ internal class Sykepengehistorikkløser(
         sikkerlogg.info("mottok melding: ${packet.toJson()}")
         infotrygdService.løsningForBehov(
             packet["@id"].asText(),
-            packet["vedtaksperiodeId"].asText(),
             packet["fødselsnummer"].asText(),
             packet["$behov.historikkFom"].asLocalDate(),
             packet["$behov.historikkTom"].asLocalDate()
@@ -49,9 +47,8 @@ internal class Sykepengehistorikkløser(
             )
             context.send(packet.toJson().also { json ->
                 sikkerlogg.info(
-                    "sender svar {} for {}:\n\t{}",
+                    "sender svar {}:\n\t{}",
                     keyValue("id", packet["@id"].asText()),
-                    keyValue("vedtaksperiodeId", packet["vedtaksperiodeId"].asText()),
                     json
                 )
             })

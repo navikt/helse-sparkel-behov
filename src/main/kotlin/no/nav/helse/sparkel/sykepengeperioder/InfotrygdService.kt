@@ -16,7 +16,6 @@ internal class InfotrygdService(private val infotrygdClient: InfotrygdClient) {
 
     fun løsningForBehov(
         behovId: String,
-        vedtaksperiodeId: String,
         fødselsnummer: String,
         fom: LocalDate,
         tom: LocalDate
@@ -24,31 +23,28 @@ internal class InfotrygdService(private val infotrygdClient: InfotrygdClient) {
         try {
             val historikk = infotrygdClient.hentHistorikk(
                 behovId = behovId,
-                vedtaksperiodeId = vedtaksperiodeId,
                 fnr = fødselsnummer,
                 fom = fom,
                 tom = tom
             )
             log.info(
-                "løser behov: {} for {}",
-                keyValue("id", behovId),
-                keyValue("vedtaksperiodeId", vedtaksperiodeId)
+                "løser behov: {}",
+                keyValue("id", behovId)
             )
             sikkerlogg.info(
-                "løser behov: {} for {}",
-                keyValue("id", behovId),
-                keyValue("vedtaksperiodeId", vedtaksperiodeId)
+                "løser behov: {}",
+                keyValue("id", behovId)
             )
             return historikk
         } catch (err: Exception) {
             log.warn(
                 "feil ved henting av infotrygd-data: ${err.message} for {}",
-                keyValue("vedtaksperiodeId", vedtaksperiodeId),
+                keyValue("id", behovId),
                 err
             )
             sikkerlogg.warn(
                 "feil ved henting av infotrygd-data: ${err.message} for {}",
-                keyValue("vedtaksperiodeId", vedtaksperiodeId),
+                keyValue("id", behovId),
                 err
             )
             return null

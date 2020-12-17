@@ -28,7 +28,7 @@ internal class Utbetalingsperiodeløser(
         River(rapidsConnection).apply {
             validate { it.demandAll("@behov", listOf(behov)) }
             validate { it.rejectKey("@løsning") }
-            validate { it.requireKey("@id", "fødselsnummer", "vedtaksperiodeId") }
+            validate { it.requireKey("@id", "fødselsnummer") }
             validate { it.require("$behov.historikkFom", JsonNode::asLocalDate) }
             validate { it.require("$behov.historikkTom", JsonNode::asLocalDate) }
         }.register(this)
@@ -44,7 +44,6 @@ internal class Utbetalingsperiodeløser(
         val historikkTom = packet["$behov.historikkTom"].asLocalDate()
         infotrygdService.løsningForBehov(
             packet["@id"].asText(),
-            packet["vedtaksperiodeId"].asText(),
             packet["fødselsnummer"].asText(),
             historikkFom,
             historikkTom
@@ -56,7 +55,6 @@ internal class Utbetalingsperiodeløser(
                 sikkerlogg.info(
                     "sender svar {} for {}:\n\t{}",
                     keyValue("id", packet["@id"].asText()),
-                    keyValue("vedtaksperiodeId", packet["vedtaksperiodeId"].asText()),
                     json
                 )
             })
