@@ -24,7 +24,7 @@ internal class Sykepengehistorikkløser(
             validate { it.demandAll("@behov", listOf(behov)) }
             validate { it.rejectKey("@løsning") }
             validate { it.requireKey("@id") }
-            validate { it.interestedIn("@opprettet") }
+            validate { it.requireKey("@opprettet") }
             validate { it.requireKey("fødselsnummer") }
             validate { it.require("$behov.historikkFom", JsonNode::asLocalDate) }
             validate { it.require("$behov.historikkTom", JsonNode::asLocalDate) }
