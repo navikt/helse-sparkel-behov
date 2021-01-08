@@ -38,7 +38,7 @@ internal class Sykepengehistorikkløser(
     override fun onPacket(packet: JsonMessage, context: RapidsConnection.MessageContext) {
         sikkerlogg.info("mottok melding: ${packet.toJson()}")
         if (packet["@opprettet"].asLocalDateTime().isBefore(LocalDateTime.now().minusMinutes(30))) {
-            sikkerlogg.info("ignorerer {} fordi det er over 30 minutter gammelt")
+            sikkerlogg.info("ignorerer {} fordi det er over 30 minutter gammelt", keyValue("behovId", packet["@id"]))
             return
         }
         infotrygdService.løsningForBehov(
