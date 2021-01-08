@@ -5,6 +5,8 @@ import net.logstash.logback.argument.StructuredArguments.keyValue
 import no.nav.helse.rapids_rivers.*
 import no.nav.helse.sparkel.sykepengeperioder.infotrygd.Utbetalingshistorikk
 import org.slf4j.LoggerFactory
+import java.lang.IllegalArgumentException
+import java.time.LocalDateTime
 
 internal class Sykepengehistorikkløser(
     rapidsConnection: RapidsConnection,
@@ -22,6 +24,7 @@ internal class Sykepengehistorikkløser(
             validate { it.demandAll("@behov", listOf(behov)) }
             validate { it.rejectKey("@løsning") }
             validate { it.requireKey("@id") }
+            validate { it.interestedIn("@opprettet") }
             validate { it.requireKey("fødselsnummer") }
             validate { it.require("$behov.historikkFom", JsonNode::asLocalDate) }
             validate { it.require("$behov.historikkTom", JsonNode::asLocalDate) }
@@ -34,6 +37,10 @@ internal class Sykepengehistorikkløser(
 
     override fun onPacket(packet: JsonMessage, context: RapidsConnection.MessageContext) {
         sikkerlogg.info("mottok melding: ${packet.toJson()}")
+        if (packet["@opprettet"].asLocalDateTime().isBefore(LocalDateTime.now().minusMinutes(30))) {
+            sikkerlogg.info("ignorerer {} fordi det er over 30 minutter gammelt")
+            return
+        }
         infotrygdService.løsningForBehov(
             packet["@id"].asText(),
             packet["fødselsnummer"].asText(),

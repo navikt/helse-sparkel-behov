@@ -21,9 +21,11 @@ import no.nav.helse.sparkel.sykepengeperioder.infotrygd.InfotrygdClient
 import org.junit.jupiter.api.*
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.TestInstance.Lifecycle
 import java.time.LocalDate
+import java.time.LocalDateTime
 
 @TestInstance(Lifecycle.PER_CLASS)
 internal class SykepengehistorikkløserTest {
@@ -98,6 +100,18 @@ internal class SykepengehistorikkløserTest {
         val perioder = sendtMelding.løsning()
 
         assertEquals(2, perioder.size)
+    }
+
+    @Test
+    fun `ignorerer behov som er mer enn 30 min gamle`() {
+        stubSvarFraInfotrygd()
+
+        val behov =
+            """{"@id": "behovsid", "@opprettet":"${LocalDateTime.now().minusMinutes(35)}", "@behov":["${Sykepengehistorikkløser.behov}"], "${Sykepengehistorikkløser.behov}": { "historikkFom": "2016-01-01", "historikkTom": "2020-01-01"}, "fødselsnummer": "fnr", "vedtaksperiodeId": "id" }"""
+
+        testBehov(behov)
+
+        assertFalse(this::sendtMelding.isInitialized)
     }
 
     @Test
