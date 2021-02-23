@@ -1,7 +1,7 @@
-val junitJupiterVersion = "5.6.2"
+val junitJupiterVersion = "5.7.1"
 
 plugins {
-    kotlin("jvm") version "1.3.72"
+    kotlin("jvm") version "1.4.30"
 }
 
 buildscript {
@@ -18,7 +18,7 @@ repositories {
 }
 
 dependencies {
-    implementation("com.github.navikt:rapids-and-rivers:fa839faa1c")
+    implementation("com.github.navikt:rapids-and-rivers:6d6256d7cc")
 
     testImplementation("io.mockk:mockk:1.10.0")
     testImplementation("com.github.tomakehurst:wiremock:2.27.1") {
@@ -33,10 +33,10 @@ dependencies {
 
 tasks {
     compileKotlin {
-        kotlinOptions.jvmTarget = "12"
+        kotlinOptions.jvmTarget = "14"
     }
     compileTestKotlin {
-        kotlinOptions.jvmTarget = "12"
+        kotlinOptions.jvmTarget = "14"
     }
 
     named<Jar>("jar") {
@@ -66,6 +66,6 @@ tasks {
     }
 
     withType<Wrapper> {
-        gradleVersion = "6.5.1"
+        gradleVersion = "6.8.2"
     }
 }
