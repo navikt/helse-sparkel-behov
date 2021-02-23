@@ -1,0 +1,104 @@
+{
+  "sykmeldingsperioder": [
+    {
+      "ident": 1234,
+      "tknr": "1234",
+      "seq": 23456789,
+      "sykemeldtFom": "2019-06-03",
+      "sykemeldtTom": "2019-08-05",
+      "grad": "100",
+      "ferie1Fom": "2019-08-06",
+      "ferie1Tom": "2019-08-20",
+      "erArbeidsgiverPeriode": false,
+      "stansAarsakKode": "",
+      "stansAarsak": "Ukjent..",
+      "unntakAktivitet": "",
+      "arbeidsKategoriKode": "01",
+      "arbeidsKategori": "Arbeidstaker",
+      "arbeidsKategori99": "",
+      "erSanksjonBekreftet": "",
+      "sanksjonsDager": 0,
+      "sykemelder": "PIKACHU",
+      "behandlet": "2019-06-03",
+      "yrkesskadeArt": "",
+      "utbetalingList": [
+        {
+          "fom": "2019-03-18",
+          "tom": "2019-04-11",
+          "utbetalingsGrad": "050",
+          "oppgjorsType": "",
+          "utbetalt": "2019-05-07",
+          "dagsats": 765.0,
+          "typeKode": "5",
+          "typeTekst": "ArbRef",
+          "arbOrgnr": 88888888
+        },
+        {
+          "fom": "2019-03-07",
+          "tom": "2019-03-17",
+          "utbetalingsGrad": "100",
+          "oppgjorsType": "",
+          "utbetalt": "2019-04-01",
+          "dagsats": 765.0,
+          "typeKode": "5",
+          "typeTekst": "ArbRef",
+          "arbOrgnr": 88888888
+        }
+      ],
+      "statslonnList": [
+        {
+          "statLonn": 100
+        }
+      ],
+      "inntektList": [],
+      "graderingList": [
+        {
+          "gradertFom": "2019-06-03",
+          "gradertTom": "2019-06-28",
+          "grad": "100"
+        },
+        {
+          "gradertFom": "2019-06-03",
+          "gradertTom": "2019-08-05",
+          "grad": "100"
+        }
+      ],
+      "forsikring": []
+    },
+    {
+      "ident": 1234,
+      "tknr": "1234",
+      "seq": 23456789,
+      "sykemeldtFom": "2018-11-09",
+      "sykemeldtTom": "2018-11-18",
+      "grad": "100",
+      "ferie1Fom": "2019-08-06",
+      "ferie1Tom": "2019-08-20",
+      "ferie2Fom": "2019-01-06",
+      "ferie2Tom": "2019-01-20",
+      "erArbeidsgiverPeriode": false,
+      "stansAarsakKode": "",
+      "stansAarsak": "Ukjent..",
+      "unntakAktivitet": "",
+      "arbeidsKategoriKode": "01",
+      "arbeidsKategori": "Arbeidstaker",
+      "arbeidsKategori99": "",
+      "erSanksjonBekreftet": "",
+      "sanksjonsDager": 0,
+      "sykemelder": "RAICHU",
+      "behandlet": "2018-11-09",
+      "yrkesskadeArt": "",
+      "utbetalingList": [],
+      "statslonnList": [],
+      "inntektList": [],
+      "graderingList": [
+        {
+          "gradertFom": "2018-11-09",
+          "gradertTom": "2018-11-18",
+          "grad": "100"
+        }
+      ],
+      "forsikring": []
+    }
+  ]
+}

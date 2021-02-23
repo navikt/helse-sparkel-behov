@@ -10,7 +10,7 @@ import java.time.LocalDate
 internal class UtbetalingshistorikkTest {
 
     @Test
-    internal fun utbetalingshistorikk() {
+    fun utbetalingshistorikk() {
         val json = readJson("infotrygdResponse.json")
         val utbetalingshistorikk = Utbetalingshistorikk(json["sykmeldingsperioder"][1])
 
@@ -23,7 +23,7 @@ internal class UtbetalingshistorikkTest {
     }
 
     @Test
-    internal fun `utbetalingshistorikk med manglende fom og tom i utbetalingslisten`() {
+    fun `utbetalingshistorikk med manglende fom og tom i utbetalingslisten`() {
         val json = readJson("infotrygdResponseMissingFomAndTom.json")
         val utbetalingshistorikk = Utbetalingshistorikk(json["sykmeldingsperioder"][1])
 
@@ -37,7 +37,28 @@ internal class UtbetalingshistorikkTest {
     }
 
     @Test
-    internal fun `parser hele lista med utbetalingshistorikk`() {
+    fun `utbetalingshistorikk med ferie1Fom og ferie1Tom har med ferieperioden`() {
+        val json = readJson("infotrygdResponseMedFerie1FomOgTom.json")
+        val utbetalingshistorikk = Utbetalingshistorikk(json["sykmeldingsperioder"][0])
+
+        assertNotNull(utbetalingshistorikk.inntektsopplysninger)
+        assertNotNull(utbetalingshistorikk.utbetalteSykeperioder)
+        assertEquals(3, utbetalingshistorikk.utbetalteSykeperioder.size)
+        assertEquals("9", utbetalingshistorikk.utbetalteSykeperioder[2].typeKode)
+        assertEquals("Ferie", utbetalingshistorikk.utbetalteSykeperioder[2].typeTekst)
+
+        val utbetalingshistorikk2 = Utbetalingshistorikk(json["sykmeldingsperioder"][1])
+        assertNotNull(utbetalingshistorikk2.inntektsopplysninger)
+        assertNotNull(utbetalingshistorikk2.utbetalteSykeperioder)
+        assertEquals(2, utbetalingshistorikk2.utbetalteSykeperioder.size)
+        assertEquals("9", utbetalingshistorikk2.utbetalteSykeperioder[0].typeKode)
+        assertEquals("Ferie", utbetalingshistorikk2.utbetalteSykeperioder[0].typeTekst)
+        assertEquals("9", utbetalingshistorikk2.utbetalteSykeperioder[1].typeKode)
+        assertEquals("Ferie", utbetalingshistorikk2.utbetalteSykeperioder[1].typeTekst)
+    }
+
+    @Test
+    fun `parser hele lista med utbetalingshistorikk`() {
         val json = readJson("infotrygdResponse.json")
         val utbetalingshistorikkListe = json["sykmeldingsperioder"].map { Utbetalingshistorikk(it) }
         assertEquals(20, utbetalingshistorikkListe.size)

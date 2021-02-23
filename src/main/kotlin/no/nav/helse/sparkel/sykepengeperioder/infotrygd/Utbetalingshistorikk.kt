@@ -25,24 +25,45 @@ class Utbetalingshistorikk(jsonNode: JsonNode, sjekkStatslønn: Boolean = false)
         .map { Inntektsopplysninger(it) }
         .filter(Inntektsopplysninger::skalTilSpleis)
 
-    val utbetalteSykeperioder = jsonNode["utbetalingList"].map { Utbetaling(it, inntektsopplysninger) }
+    private val ferie1: Utbetaling? = jsonNode["ferie1Fom"]?.takeUnless { it.isNull }?.textValue()?.let(LocalDate::parse)?.let { ferie1fom ->
+        jsonNode["ferie1Tom"]?.takeUnless { it.isNull }?.textValue()?.let(LocalDate::parse)?.let { ferie1tom ->
+            Utbetaling(ferie1fom, ferie1tom, "", "", ferie1fom, 0.0, "9", "Ferie", "0")
+        }
+    }
+
+    private val ferie2: Utbetaling? = jsonNode["ferie2Fom"]?.takeUnless { it.isNull }?.textValue()?.let(LocalDate::parse)?.let { ferie2fom ->
+        jsonNode["ferie2Tom"]?.takeUnless { it.isNull }?.textValue()?.let(LocalDate::parse)?.let { ferie2tom ->
+            Utbetaling(ferie2fom, ferie2tom, "", "", ferie2fom, 0.0, "9", "Ferie", "0")
+        }
+    }
+
+    val utbetalteSykeperioder = jsonNode["utbetalingList"].map { Utbetaling(it) } + listOfNotNull(ferie1, ferie2)
     val maksDato: LocalDate? = jsonNode["slutt"]?.takeUnless { it.isNull }?.textValue()?.let { LocalDate.parse(it) }
     val statslønn: Boolean = sjekkStatslønn && !jsonNode.path("statslonnList").isEmpty
 }
 
 data class Utbetaling(
-    private val jsonNode: JsonNode,
-    private val inntektsopplysninger: List<Inntektsopplysninger>
+    val fom: LocalDate?,
+    val tom: LocalDate?,
+    val utbetalingsGrad: String,
+    val oppgjorsType: String,
+    val utbetalt: LocalDate?,
+    val dagsats: Double,
+    val typeKode: String,
+    val typeTekst: String,
+    val orgnummer: String
 ) {
-    val fom: LocalDate? = jsonNode["fom"]?.takeUnless { it.isNull }?.textValue()?.let { LocalDate.parse(it) }
-    val tom: LocalDate? = jsonNode["tom"]?.takeUnless { it.isNull }?.textValue()?.let { LocalDate.parse(it) }
-    val utbetalingsGrad: String = jsonNode["utbetalingsGrad"].textValue()
-    val oppgjorsType: String = jsonNode["oppgjorsType"].textValue()
-    val utbetalt: LocalDate? = jsonNode["utbetalt"].takeUnless { it.isNull }?.let { LocalDate.parse(it.textValue()) }
-    val dagsats: Double = jsonNode["dagsats"].doubleValue()
-    val typeKode: String = jsonNode["typeKode"].textValue()
-    val typeTekst: String = jsonNode["typeTekst"].textValue()
-    val orgnummer: String = jsonNode["arbOrgnr"].asText()
+    constructor(jsonNode: JsonNode) : this(
+        fom = jsonNode["fom"]?.takeUnless { it.isNull }?.textValue()?.let { LocalDate.parse(it) },
+        tom = jsonNode["tom"]?.takeUnless { it.isNull }?.textValue()?.let { LocalDate.parse(it) },
+        utbetalingsGrad = jsonNode["utbetalingsGrad"].textValue(),
+        oppgjorsType = jsonNode["oppgjorsType"].textValue(),
+        utbetalt = jsonNode["utbetalt"].takeUnless { it.isNull }?.let { LocalDate.parse(it.textValue()) },
+        dagsats = jsonNode["dagsats"].doubleValue(),
+        typeKode = jsonNode["typeKode"].textValue(),
+        typeTekst = jsonNode["typeTekst"].textValue(),
+        orgnummer = jsonNode["arbOrgnr"].asText()
+    )
 }
 
 data class Inntektsopplysninger(private val jsonNode: JsonNode) {
