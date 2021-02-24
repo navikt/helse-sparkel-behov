@@ -1,3 +1,5 @@
+# [Flyttet til monorepo](https://github.com/navikt/helse-sparkelapper)
+
 # Sparkel sykepengeperioder
 ![Bygg og deploy](https://github.com/navikt/helse-sparkel-sykepengeperioder/workflows/Bygg%20og%20deploy/badge.svg)
 
